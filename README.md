@@ -1,65 +1,72 @@
-# container-monitoring-extension README
+# Container Monitoring Extension README
 
-This is the README for your extension "container-monitoring-extension". After writing up a brief description, we recommend including the following sections.
+Welcome to the Container Monitoring Extension for Visual Studio Code! This extension allows users to monitor the health and status of Docker containers directly within the VS Code environment.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Real-Time Alerts**: Receive real-time alerts for container health checks.
+- **Notifications**: Get notifications for warnings and errors with container health.
+- **Automatic Clear Alerts**: Automatically clear notifications when containers are healthy again.
 
-For example if there is an image subfolder under your extension project workspace:
+![Alert Notification](images/vscode_alerts.png)
 
-\!\[feature X\]\(images/feature-x.png\)
+![Alert Notification Dashboard](images/monitoring_dashboard_alerts.png)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- Container lifecycle management in a monitoring dashboard developed in ReactJS and Tailwind CSS.
+
+![Container's Management](images/monitoring_dashboard_container.png)
+
+- AI chat support of failed containers.
+
+![container AI chat Support](images/monitoring_dashboard_chat.png)
+
+- Live containers metrics/stats.
+
+![container metrics](images/monitoring_dashboard_metrics.png)
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- **Docker**: Ensure Docker is installed and running on your system.
+- **DockerHealthCheck**: Ensure Docker HealthCheck is enabled.
+- **Dockerode**: The extension depends on the Dockerode Node.js library. Install it via npm:
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+To be updated
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+No known issues at this time. Please report any bugs or feature requests through our GitHub repository.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
+- Initial release of the Container Monitoring Extension.
 
 ### 1.1.0
 
-Added features X, Y, and Z.
+- Added real-time alerts and notifications.
+- Introduced automatic clearing of alerts feature.
+- Introduced vscode webview of monitoring dashboard.
 
----
+## Getting Started
 
-## Working with Markdown
+To begin using the Container Monitoring Extension:
 
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+1. Install the extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=yourusername.container-monitoring-extension).
+2. Open VS Code and navigate to the Command Palette (`Ctrl+Shift+P` on Windows/Linux, `Cmd+Shift+P` on macOS).
+3. Type "**Start Container Monitoring**" and select it to initialize the extension.
+4. Access the **Container Monitoring Dashboard** from the Command Palette to view and manage container health and status.
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
+Ensure Docker is installed and running on your system for the extension to function properly.
 
-## For more information
+**Currently, monitoring is only available for containers enabled with HEALTHCHECK.**
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+**Happy monitoring!**
 
-**Enjoy!**
+## For More Information
+
+For more details on how to use and contribute to this extension, visit my [GitHub repository](https://github.com/abinay-devulapally/container-monitoring-extension).
+
+**Enjoy monitoring your containers with ease!**
