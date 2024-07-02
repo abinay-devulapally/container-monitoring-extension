@@ -1,6 +1,7 @@
 const Docker = require("dockerode");
 const vscode = require("vscode");
 const axios = require("axios");
+const os = require("os");
 
 const docker = new Docker();
 
@@ -12,6 +13,7 @@ class DockerAlertHandler {
     this.maxRetries = maxRetries;
     this.retryAttempts = {};
     this.notifications = new Map();
+    this.hostname = os.hostname();
     this.hostAddress = "http://localhost:8000";
     this.running = false;
   }
@@ -35,8 +37,8 @@ class DockerAlertHandler {
   }
 
   createAlert(
-    severity = "Info",
-    host = "Windows Server",
+    severity = "Warning",
+    host = this.hostname,
     service,
     details,
     isAlarm = false,
@@ -135,39 +137,33 @@ class DockerAlertHandler {
   }
 
   async processEvent(event) {
-    let unit = "";
-    if (event.service[0] === "/") {
-      unit = event.service.slice(1);
-    }
-
     try {
-      if (event.status) {
+      let unit = event.service[0] === "/" ? event.service.slice(1) : "";
+      const Alarmdetails = `Container ${unit} HealthCheck failed after retries`;
+      if (event.status && !this.raisedAlarms.has(event.service)) {
         const createdAlarm = this.createAlert(
           "Critical",
-          "Windows Server",
+          undefined,
           unit,
-          `Container ${unit} HealthCheck failed after retries`,
-          true,
-          "active"
+          Alarmdetails,
+          true
         );
-        this.showNotification(
-          "error",
-          `Container ${unit} HealthCheck failed after retries`
-        );
+        this.showNotification("error", Alarmdetails);
         await this.sendRequest("alerts", createdAlarm);
         this.raisedAlarms.add(event.service);
       }
-      const createdAlert = this.createAlert(
-        "Warning",
-        "Windows Server",
-        unit,
-        `Container ${unit} HealthCheck failed`,
-        false,
-        "active"
-      );
-      this.showNotification("warn", `Container ${unit} HealthCheck failed`);
-      await this.sendRequest("alerts", createdAlert);
-      this.raisedAlerts.add(event.service);
+      if (!this.raisedAlerts.has(event.service)) {
+        const alertDetails = `Container ${unit} HealthCheck failed`;
+        const createdAlert = this.createAlert(
+          undefined,
+          undefined,
+          unit,
+          alertDetails
+        );
+        this.showNotification("warn", alertDetails);
+        await this.sendRequest("alerts", createdAlert);
+        this.raisedAlerts.add(event.service);
+      }
     } catch (error) {
       console.error("Error processing event:", error);
     }
@@ -185,43 +181,46 @@ class DockerAlertHandler {
       );
       let service = "";
 
-      for (let unit of this.raisedAlerts) {
-        if (healthyContainerNames.has(unit) || !allContainerNames.has(unit)) {
-          if (unit[0] === "/") {
-            service = unit.slice(1);
-          }
+      for (let raisedAlert of this.raisedAlerts) {
+        if (
+          healthyContainerNames.has(raisedAlert) ||
+          !allContainerNames.has(raisedAlert)
+        ) {
+          service = raisedAlert.startsWith("/") ? raisedAlert.slice(1) : "";
+
           const createdClearedAlert = this.createAlert(
-            "Warning",
-            "Windows Server",
-            unit,
-            `Container ${unit} HealthCheck failed`,
+            undefined,
+            undefined,
+            service,
+            `Container ${service} HealthCheck failed`,
             false,
             "cleared"
           );
           await this.clearNotification(`${service} alert cleared`);
           await this.sendRequest("clear-alert", createdClearedAlert);
           this.showNotification("info", `${service} alert cleared`);
-          this.raisedAlerts.delete(unit);
+          this.raisedAlerts.delete(raisedAlert);
         }
       }
 
-      for (let unit of this.raisedAlarms) {
-        if (healthyContainerNames.has(unit) || !allContainerNames.has(unit)) {
-          if (unit[0] === "/") {
-            service = unit.slice(1);
-          }
+      for (let raisedAlarm of this.raisedAlarms) {
+        if (
+          healthyContainerNames.has(raisedAlarm) ||
+          !allContainerNames.has(raisedAlarm)
+        ) {
+          service = raisedAlarm.startsWith("/") ? raisedAlarm.slice(1) : "";
           const createdClearedAlarm = this.createAlert(
             "Critical",
-            "Windows Server",
-            unit,
-            `Container ${unit} HealthCheck failed after retries`,
+            undefined,
+            service,
+            `Container ${service} HealthCheck failed after retries`,
             true,
             "cleared"
           );
           await this.clearNotification(`${service} alarm cleared and healthy`);
           await this.sendRequest("clear-alert", createdClearedAlarm);
           this.showNotification("info", `${service} alarm cleared and healthy`);
-          this.raisedAlarms.delete(unit);
+          this.raisedAlarms.delete(raisedAlarm);
         }
       }
     } catch (error) {
