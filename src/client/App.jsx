@@ -29,7 +29,6 @@ const App = () => {
 
   const handlePanelClick = (target) => {
     setActivePanel(target);
-    console.log("Active Panel: ", target);
   };
 
   useEffect(() => {

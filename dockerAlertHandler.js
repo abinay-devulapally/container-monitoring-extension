@@ -13,6 +13,7 @@ class DockerAlertHandler {
     this.retryAttempts = {};
     this.notifications = new Map();
     this.hostAddress = "http://localhost:8000";
+    this.running = false;
   }
 
   async checkHealthyContainers() {
@@ -229,7 +230,8 @@ class DockerAlertHandler {
   }
 
   async run() {
-    while (true) {
+    this.running = true;
+    while (this.running) {
       try {
         if (this.queue.length > 0) {
           const event = this.queue.shift();
@@ -248,6 +250,11 @@ class DockerAlertHandler {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
+  }
+
+  stop() {
+    console.log("dockerAlertHandler Process Stopped");
+    this.running = false;
   }
 }
 

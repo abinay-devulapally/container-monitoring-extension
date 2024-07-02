@@ -14,7 +14,7 @@ app.use(cors());
 const sequelize = new Sequelize({
   dialect: "sqlite",
   storage: "./alerts.db",
-  logging: console.log,
+  // logging: console.log,
 });
 
 // Define models
@@ -66,15 +66,30 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Sync database and start server
-const process_backend_server = async () => {
+// Function to reset database
+const resetDatabase = async () => {
+  try {
+    await sequelize.sync({ force: true });
+    console.log("Database reset completed...");
+  } catch (error) {
+    console.error("Error resetting database:", error.message);
+  }
+};
+
+let server;
+
+const startServer = async () => {
   try {
     await sequelize.authenticate();
     console.log("Database connected...");
 
+    // Optionally reset the database
+    await resetDatabase();
+
     // Synchronize models with the database
     await sequelize.sync();
     console.log("Database synchronized...");
+
     // Use portfinder to find an available port
     const port = await portfinder.getPortPromise({
       startPort: 8000,
@@ -82,11 +97,19 @@ const process_backend_server = async () => {
     });
 
     // Start your server on the found port
-    const server = await app.listen(port);
+    server = await app.listen(port);
     console.log(`Server running on http://0.0.0.0:${port}`);
   } catch (err) {
     console.error(`Failed to start server: ${err.message}`);
   }
 };
 
-module.exports = process_backend_server;
+const stopServer = () => {
+  if (server) {
+    server.close(() => {
+      console.log("Server stopped.");
+    });
+  }
+};
+
+module.exports = { startServer, stopServer };

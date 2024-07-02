@@ -34,7 +34,6 @@ import React from "react";
 const css_table_border_right = "py-2 px-4 border-r border-gray-700";
 
 function Alerts({ alertData }) {
-  console.log(alertData);
   const getSeverityColor = (severity) => {
     switch (severity) {
       case "Critical":

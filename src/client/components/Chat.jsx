@@ -132,7 +132,6 @@ function OpenAIChat() {
     };
 
     try {
-      console.log("requesting..");
       const response = await fetch(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -209,7 +208,6 @@ function Chat({ debug }) {
     },
   ]);
 
-  console.log("debug", debug);
   const [isTyping, setIsTyping] = useState(false);
   async function processMessageToGemini(chatMessages) {
     const error = "Error: 'NoneType' object has no attribute 'group'";

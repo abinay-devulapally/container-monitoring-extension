@@ -9,4 +9,3 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/.vscode-test.*
 testing_ignore/**
-node_modules/**

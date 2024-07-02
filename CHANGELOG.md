@@ -1,12 +1,17 @@
 # Change Log
 
-All notable changes to the "Container Monitoring Extension" extension will be documented in this file.
+Change log of Live Container Monitoring Extension.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [1.1.2] - 2024-07-02
 
-## [Unreleased]
+### Added
 
-- Initial release of the Container Monitoring Extension.
+- Improved stability and performance.
+- Enhanced user interface for better user experience.
+
+### Fixed
+
+- Minor bugs in alert handling.
 
 ## [1.1.0] - 2024-07-02
 
@@ -14,7 +19,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Real-time alerts and notifications.
 - Automatic clearing of alerts feature.
-- VS Code webview of monitoring dashboard.
+- VS Code webview for monitoring dashboard.
 
 ### Changed
 
@@ -23,7 +28,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [1.0.0] - 2024-06-29
 
-### Added
-
-- Basic functionality for monitoring Docker containers.
-- Command palette integration for starting and managing monitoring.
+- Initial release

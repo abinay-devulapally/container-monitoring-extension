@@ -1,32 +1,59 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
 const path = require("path");
-const process_backend_server = require("./app");
+const { startServer, stopServer } = require("./app");
 const DockerAlertHandler = require("./dockerAlertHandler");
 const DockerEventHandler = require("./dockerEventHandler");
 
-process_backend_server();
+startServer();
+
+let alertHandler = null;
+let eventHandler = null;
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-  let disposable = vscode.commands.registerCommand(
+  let startMonitoring = vscode.commands.registerCommand(
     "extension.startMonitoring",
     function () {
-      const queue = [];
+      if (!alertHandler && !eventHandler) {
+        const queue = [];
 
-      const alertHandler = new DockerAlertHandler(queue);
-      const eventHandler = new DockerEventHandler(queue);
+        alertHandler = new DockerAlertHandler(queue);
+        eventHandler = new DockerEventHandler(queue);
 
-      alertHandler.run();
-      eventHandler.run();
+        alertHandler.run();
+        eventHandler.run();
 
-      vscode.window.showInformationMessage("Container Monitoring Started!");
+        vscode.window.showInformationMessage("Container Monitoring Started!");
+      } else {
+        vscode.window.showInformationMessage(
+          "Container Monitoring is already running."
+        );
+      }
     }
   );
-  const openDashboard = vscode.commands.registerCommand(
+
+  let stopMonitoring = vscode.commands.registerCommand(
+    "extension.stopMonitoring",
+    function () {
+      if (alertHandler && eventHandler) {
+        alertHandler.stop();
+        eventHandler.stop();
+
+        alertHandler = null;
+        eventHandler = null;
+
+        vscode.window.showInformationMessage("Container Monitoring Stopped!");
+      } else {
+        vscode.window.showInformationMessage(
+          "Container Monitoring is not running."
+        );
+      }
+    }
+  );
+
+  let openDashboard = vscode.commands.registerCommand(
     "extension.openDashboard",
     () => {
       const panel = vscode.window.createWebviewPanel(
@@ -80,18 +107,29 @@ function activate(context) {
             </body>
 
             </html>
-    `;
+      `;
 
       panel.webview.html = htmlContent;
     }
   );
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(startMonitoring);
+  context.subscriptions.push(stopMonitoring);
   context.subscriptions.push(openDashboard);
 }
 
 // This method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() {
+  if (alertHandler && eventHandler) {
+    alertHandler.stop();
+    eventHandler.stop();
+
+    alertHandler = null;
+    eventHandler = null;
+  }
+
+  stopServer();
+}
 
 module.exports = {
   activate,

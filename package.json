@@ -6,8 +6,9 @@
   },
   "displayName": "Container Monitoring Extension",
   "publisher": "LiveContainerMonitoring",
-  "description": "",
-  "version": "1.1.0",
+  "description": "Container Monitoring Extension for Visual Studio Code provides real-time monitoring and management of Docker container health and status directly within the VS Code environment, featuring debug capabilities of containers with AI chat support",
+  "version": "1.1.2",
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -17,10 +18,46 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "containerMonitoring",
+          "title": "Container Monitoring",
+          "icon": "images/servermonitor.svg"
+        }
+      ],
+      "panel": [
+        {
+          "id": "containerMonitoringPanel",
+          "title": "Container Monitoring",
+          "icon": "images/servermonitor.svg"
+        }
+      ]
+    },
+    "views": {
+      "containerMonitoring": [
+        {
+          "id": "dashboard",
+          "name": "Dashboard",
+          "contextualTitle": "Container Monitoring",
+          "icon": "images/servermonitor.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "dashboard",
+        "contents": "Welcome to the Container Monitoring Extension for Visual Studio Code!\nMonitor and manage Docker containers health and status directly within the VS Code environment, featuring debug capabilities of containers with AI chat support.\n\n[Learn more](https://github.com/abinay-devulapally/container-monitoring-extension)\n\n[Start Monitoring](command:extension.startMonitoring)\n[Stop Monitoring](command:extension.stopMonitoring)\n[Open Dashboard](command:extension.openDashboard)"
+      }
+    ],
     "commands": [
       {
         "command": "extension.startMonitoring",
         "title": "Start Container Monitoring"
+      },
+      {
+        "command": "extension.stopMonitoring",
+        "title": "Stop Container Monitoring"
       },
       {
         "command": "extension.openDashboard",

@@ -8,6 +8,7 @@ class DockerEventHandler {
     this.queue = queue;
     this.maxRetries = 2;
     this.processedContainers = new Set();
+    this.running = false;
   }
 
   async checkUnhealthyContainers() {
@@ -72,7 +73,8 @@ class DockerEventHandler {
   }
 
   async run() {
-    while (true) {
+    this.running = true;
+    while (this.running) {
       try {
         const unhealthyContainers = await this.checkUnhealthyContainers();
         const healthyContainers = await this.checkHealthyContainers();
@@ -91,6 +93,11 @@ class DockerEventHandler {
         console.error("Error in main process loop:", error);
       }
     }
+  }
+
+  stop() {
+    console.log("dockerEventHandler Process Stopped");
+    this.running = false;
   }
 }
 
