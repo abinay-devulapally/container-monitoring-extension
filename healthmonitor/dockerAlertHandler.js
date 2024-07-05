@@ -1,9 +1,11 @@
-const Docker = require("dockerode");
 const vscode = require("vscode");
 const axios = require("axios");
 const os = require("os");
 
-const docker = new Docker();
+const {
+  checkHealthyContainers,
+  checkAllContainers,
+} = require("./containerStatus");
 
 class DockerAlertHandler {
   constructor(queue, maxRetries = 3) {
@@ -16,24 +18,6 @@ class DockerAlertHandler {
     this.hostname = os.hostname();
     this.hostAddress = "http://localhost:8000";
     this.running = false;
-  }
-
-  async checkHealthyContainers() {
-    try {
-      return await docker.listContainers({ filters: { health: ["healthy"] } });
-    } catch (error) {
-      console.error("Error checking healthy containers:", error);
-      return [];
-    }
-  }
-
-  async checkAllContainers() {
-    try {
-      return await docker.listContainers();
-    } catch (error) {
-      console.error("Error checking all containers:", error);
-      return [];
-    }
   }
 
   createAlert(
@@ -172,12 +156,10 @@ class DockerAlertHandler {
   async checkAndClearAlerts() {
     try {
       const healthyContainerNames = new Set(
-        (await this.checkHealthyContainers()).map(
-          (container) => container.Names[0]
-        )
+        (await checkHealthyContainers()).map((container) => container.Names[0])
       );
       const allContainerNames = new Set(
-        (await this.checkAllContainers()).map((container) => container.Names[0])
+        (await checkAllContainers()).map((container) => container.Names[0])
       );
       let service = "";
 

@@ -1,4 +1,5 @@
 const express = require("express");
+const sqlite3 = require("sqlite3");
 const { Sequelize, DataTypes } = require("sequelize");
 const alertRoutes = require("./routes/alert");
 const portfinder = require("portfinder");
@@ -13,6 +14,7 @@ app.use(cors());
 // Database setup
 const sequelize = new Sequelize({
   dialect: "sqlite",
+  dialectModule: sqlite3,
   storage: "./alerts.db",
   // logging: console.log,
 });
@@ -111,5 +113,8 @@ const stopServer = () => {
     });
   }
 };
+
+// Start the server
+// startServer();
 
 module.exports = { startServer, stopServer };

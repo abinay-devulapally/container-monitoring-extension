@@ -1,5 +1,5 @@
 const DockerAlertHandler = require("./dockerAlertHandler_RESTAPI");
-const DockerEventHandler = require("../dockerEventHandler");
+const DockerEventHandler = require("../healthmonitor/dockerEventHandler");
 
 const queue = [];
 

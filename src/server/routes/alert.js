@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 router.post("/alerts", async (req, res) => {
-  const sequelize = req.app.get("sequelize");
   const { Alert } = req.app.get("models");
   try {
     const data = req.body;
@@ -84,7 +83,6 @@ router.post("/clear-alert", async (req, res) => {
 });
 
 router.get("/alerts", async (req, res) => {
-  const sequelize = req.app.get("sequelize");
   const { Alert } = req.app.get("models");
   try {
     const severity = req.query.severity;
@@ -105,7 +103,6 @@ router.get("/alerts", async (req, res) => {
 });
 
 router.put("/alerts/:alertId", async (req, res) => {
-  const sequelize = req.app.get("sequelize");
   const { Alert } = req.app.get("models");
   try {
     const data = req.body;
@@ -123,7 +120,6 @@ router.put("/alerts/:alertId", async (req, res) => {
 });
 
 router.delete("/alerts/:alertId", async (req, res) => {
-  const sequelize = req.app.get("sequelize");
   const { Alert } = req.app.get("models");
   try {
     const alert = await Alert.findByPk(req.params.alertId);
@@ -140,7 +136,6 @@ router.delete("/alerts/:alertId", async (req, res) => {
 });
 
 router.delete("/clear-all-alerts", async (req, res) => {
-  const sequelize = req.app.get("sequelize");
   const { Alert } = req.app.get("models");
   try {
     const alertsToClear = await Alert.findAll({

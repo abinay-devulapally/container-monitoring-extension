@@ -1,0 +1,52 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore logs and other runtime data
+logs/
+*.log
+npm-debug.log*
+
+# Ignore dotenv environment file if you use it
+.env
+
+# Ignore built files for production
+/dist/
+/out/
+
+# Ignore local configuration files
+config/*.js
+
+# Ignore any local development files
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Ignore dependency directories
+.pnp/
+.pnp.js
+
+# Ignore yarn.lock file for npm projects
+yarn.lock
+
+# Ignore npm's cache directory
+.npm/
+
+# Ignore parcel-bundler cache (https://parceljs.org/)
+.cache/
+
+# Ignore ESLint cache
+.eslintcache
+
+# Ignore coverage output
+coverage/
+
+# Ignore build scripts output
+build/
+
+# Ignore any backup files
+*.bak

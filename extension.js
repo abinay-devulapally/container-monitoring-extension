@@ -1,8 +1,8 @@
 const vscode = require("vscode");
 const path = require("path");
-const { startServer, stopServer } = require("./app");
-const DockerAlertHandler = require("./dockerAlertHandler");
-const DockerEventHandler = require("./dockerEventHandler");
+const { startServer, stopServer } = require("./out/server/server.bundle");
+const DockerAlertHandler = require("./healthmonitor/dockerAlertHandler");
+const DockerEventHandler = require("./healthmonitor/dockerEventHandler");
 
 startServer();
 
@@ -67,7 +67,7 @@ function activate(context) {
 
       const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.file(
-          path.join(context.extensionPath, "out", "client", "bundle.js")
+          path.join(context.extensionPath, "out", "client", "client_bundle.js")
         )
       );
 

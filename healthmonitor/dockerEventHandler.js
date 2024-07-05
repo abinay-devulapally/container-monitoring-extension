@@ -1,7 +1,9 @@
-const Docker = require("dockerode");
 const async = require("async");
 
-const docker = new Docker();
+const {
+  checkHealthyContainers,
+  checkUnhealthyContainers,
+} = require("./containerStatus");
 
 class DockerEventHandler {
   constructor(queue) {
@@ -9,26 +11,6 @@ class DockerEventHandler {
     this.maxRetries = 2;
     this.processedContainers = new Set();
     this.running = false;
-  }
-
-  async checkUnhealthyContainers() {
-    try {
-      return await docker.listContainers({
-        filters: { health: ["unhealthy"] },
-      });
-    } catch (error) {
-      console.error("Error checking unhealthy containers:", error);
-      return [];
-    }
-  }
-
-  async checkHealthyContainers() {
-    try {
-      return await docker.listContainers({ filters: { health: ["healthy"] } });
-    } catch (error) {
-      console.error("Error checking healthy containers:", error);
-      return [];
-    }
   }
 
   async processContainer(container) {
@@ -40,7 +22,7 @@ class DockerEventHandler {
     let retries = 1;
     while (retries < this.maxRetries) {
       try {
-        const healthyContainers = await this.checkHealthyContainers();
+        const healthyContainers = await checkHealthyContainers();
         if (healthyContainers.some((c) => c.Id === container.Id)) {
           // Container is now healthy
           return;
@@ -63,7 +45,7 @@ class DockerEventHandler {
 
   async processUnhealthyContainers() {
     try {
-      const unhealthyContainers = await this.checkUnhealthyContainers();
+      const unhealthyContainers = await checkUnhealthyContainers();
 
       // Process each unhealthy container up to the limit of 5 concurrently
       async.eachLimit(unhealthyContainers, 5, async (container) => {
@@ -78,8 +60,8 @@ class DockerEventHandler {
     this.running = true;
     while (this.running) {
       try {
-        const healthyContainers = await this.checkHealthyContainers();
-        const unhealthyContainers = await this.checkUnhealthyContainers();
+        const healthyContainers = await checkHealthyContainers();
+        const unhealthyContainers = await checkUnhealthyContainers();
 
         console.log("dockerEventHandler process started");
         healthyContainers.forEach((container) =>
