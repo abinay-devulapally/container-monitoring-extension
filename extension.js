@@ -13,6 +13,42 @@ let eventHandler = null;
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+  // Register command to set API Key
+  let setApiKey = vscode.commands.registerCommand(
+    "extension.setApiKey",
+    async () => {
+      const apiKeyType = await vscode.window.showQuickPick(
+        ["ChatGPT API Key", "Gemini API Key"],
+        { placeHolder: "Select the type of API key to enter" }
+      );
+
+      if (!apiKeyType) {
+        vscode.window.showWarningMessage("API key input was cancelled.");
+        return;
+      }
+
+      const apiKey = await vscode.window.showInputBox({
+        prompt: `Enter your ${apiKeyType}`,
+        ignoreFocusOut: true,
+        password: true,
+      });
+
+      console.log(apiKey);
+
+      if (apiKey) {
+        const keyName =
+          apiKeyType === "ChatGPT API Key" ? "chatgptApiKey" : "geminiApiKey";
+        await context.secrets.store(keyName, apiKey);
+        vscode.window.showInformationMessage(
+          `${apiKeyType} saved successfully!`
+        );
+      } else {
+        vscode.window.showWarningMessage("API key input was cancelled.");
+      }
+    }
+  );
+
+  // Command to start monitoring
   let startMonitoring = vscode.commands.registerCommand(
     "extension.startMonitoring",
     function () {
@@ -34,6 +70,7 @@ function activate(context) {
     }
   );
 
+  // Command to stop monitoring
   let stopMonitoring = vscode.commands.registerCommand(
     "extension.stopMonitoring",
     function () {
@@ -53,9 +90,10 @@ function activate(context) {
     }
   );
 
+  // Command to open the dashboard
   let openDashboard = vscode.commands.registerCommand(
     "extension.openDashboard",
-    () => {
+    async () => {
       const panel = vscode.window.createWebviewPanel(
         "dashboard",
         "Container Monitoring Dashboard",
@@ -64,6 +102,9 @@ function activate(context) {
           enableScripts: true,
         }
       );
+
+      const chatgptApiKey = await context.secrets.get("chatgptApiKey");
+      const geminiApiKey = await context.secrets.get("geminiApiKey");
 
       const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.file(
@@ -87,7 +128,6 @@ function activate(context) {
                 <title>Container Monitoring Dashboard</title>
                 <link href="${styleUri}" rel="stylesheet">
                 <style>
-                    /* Additional styles for demo purposes */
                     .panel-content {
                         display: none;
                     }
@@ -97,6 +137,10 @@ function activate(context) {
                     }
                 </style>
                 <script type="module" src="${scriptUri}"></script>
+                <script>
+                  window.chatgptApiKey = "${chatgptApiKey}";
+                  window.geminiApiKey = "${geminiApiKey}";
+                </script>
             </head>
 
             <body class="bg-gray-100">
@@ -113,6 +157,7 @@ function activate(context) {
     }
   );
 
+  context.subscriptions.push(setApiKey);
   context.subscriptions.push(startMonitoring);
   context.subscriptions.push(stopMonitoring);
   context.subscriptions.push(openDashboard);

@@ -2,6 +2,7 @@ const express = require("express");
 const sqlite3 = require("sqlite3");
 const { Sequelize, DataTypes } = require("sequelize");
 const alertRoutes = require("./routes/alert");
+const containerRoutes = require("./routes/container");
 const portfinder = require("portfinder");
 const cors = require("cors");
 
@@ -62,6 +63,7 @@ app.set("models", { Alert });
 
 // Routes
 app.use("/", alertRoutes);
+app.use("/containers", containerRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
@@ -93,14 +95,22 @@ const startServer = async () => {
     console.log("Database synchronized...");
 
     // Use portfinder to find an available port
-    const port = await portfinder.getPortPromise({
-      startPort: 8000,
-      stopPort: 9000,
-    });
+    portfinder
+      .getPortPromise({
+        startPort: 8000,
+        stopPort: 9000,
+      })
+      .then((port) => {
+        console.log(`Found available port: ${port}`);
 
-    // Start your server on the found port
-    server = await app.listen(port);
-    console.log(`Server running on http://0.0.0.0:${port}`);
+        // Start your server on the found port
+        server = app.listen(port, () => {
+          console.log(`Server running on http://0.0.0.0:${port}`);
+        });
+      })
+      .catch((err) => {
+        console.error(`No available port found: ${err.message}`);
+      });
   } catch (err) {
     console.error(`Failed to start server: ${err.message}`);
   }
@@ -115,6 +125,6 @@ const stopServer = () => {
 };
 
 // Start the server
-// startServer();
+startServer();
 
 module.exports = { startServer, stopServer };

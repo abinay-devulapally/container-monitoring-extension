@@ -16,7 +16,7 @@ function LeftPanel({
       handlePanelClick("chat");
       activePanel === "chat" && setDebug({ debug: false });
     }
-  }, [debug.debug]);
+  }, [debug, activePanel]);
 
   return (
     <div className="bg-gray-800 text-white w-1/4 min-h-screen p-4">

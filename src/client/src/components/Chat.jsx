@@ -1,19 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-const API_KEY = "sk-proj-VFllVOyZHfLiQ4t0mFnqT3BlbkFJqw2ZqUGEKQYRXnqVMI6n";
-const GEMINI_API_KEY = "AIzaSyDHlkYTYMIMabQdFtmXrcAiIZXQ4olKsbA";
+const chatgptApiKey = window.chatgptApiKey;
+const geminiApiKey = window.geminiApiKey;
+
+const API_KEY = chatgptApiKey;
+
+const GEMINI_API_KEY = "AIzaSyDwUPafUKjH0QVHNerraIOPsHX7FLBFv4g";
 
 // Access your API key as an environment variable (see "Set up your API key" above)
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-const systemMessage = {
-  role: "system",
-  content:
-    "Explain things like you're talking to a software professional with 2 years of experience.",
-};
 
 const ChatWindow = ({ messages, isTyping }) => {
   const chatEndRef = useRef(null);
@@ -36,38 +37,36 @@ const ChatWindow = ({ messages, isTyping }) => {
                 : "bg-gray-700 text-white self-start"
             }`}
           >
-            <div className="font-sans m-5">
-              <MessageContent content={message.message} />
+            <div className="p-3 prose prose-lg text-sm">
+              <ReactMarkdown
+                components={{
+                  code({ node, inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        style={okaidia}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, "")}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              >
+                {message.message}
+              </ReactMarkdown>
             </div>
           </div>
         ))}
         {isTyping && <TypingIndicator content="Gemini is typing" />}
         <div ref={chatEndRef} />
       </div>
-    </div>
-  );
-};
-
-const MessageContent = ({ content }) => {
-  return (
-    <div>
-      {content.split("\n").map((line, index) => {
-        if (line.startsWith("```")) {
-          return (
-            <pre key={index} className="bg-gray-900 p-2 rounded my-2">
-              <code>{line.replace(/```/g, "")}</code>
-            </pre>
-          );
-        } else if (line.startsWith("**")) {
-          return (
-            <p key={index} className="font-bold">
-              {line.replace(/\*\*/g, "")}
-            </p>
-          );
-        } else {
-          return <p key={index}>{line}</p>;
-        }
-      })}
     </div>
   );
 };
@@ -80,8 +79,9 @@ const TypingIndicator = ({ content }) => {
   );
 };
 
-function ChatInput({ onSendMessage }) {
-  const [input, setInput] = useState("");
+function ChatInput({ onSendMessage, debug }) {
+  const initialInput = debug.debug ? debug.debugDetails : "";
+  const [input, setInput] = useState(initialInput);
 
   const handleSend = () => {
     if (input.trim()) {
@@ -89,6 +89,13 @@ function ChatInput({ onSendMessage }) {
       setInput("");
     }
   };
+
+  useEffect(() => {
+    if (debug.debug && initialInput.trim()) {
+      onSendMessage(initialInput);
+      setInput("");
+    }
+  }, []);
 
   return (
     <div className="flex">
@@ -110,14 +117,21 @@ function ChatInput({ onSendMessage }) {
   );
 }
 
-function OpenAIChat() {
-  const [messages, setMessages] = useState([
-    {
-      message: "Hello, I'm ChatGPT! Ask me anything!",
-      sentTime: "just now",
-      sender: "ChatGPT",
-    },
-  ]);
+function Chat({ activePanel, debug }) {
+  const [chatType, setChatType] = useState("Gemini");
+  const [reload, setReload] = useState(false);
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    setMessages([
+      {
+        message: `Hello, I'm ${chatType}! Ask me anything!`,
+        sentTime: "just now",
+        sender: chatType,
+      },
+    ]);
+  }, [chatType, activePanel, reload]);
+
   const [isTyping, setIsTyping] = useState(false);
 
   async function processMessageToChatGPT(chatMessages) {
@@ -125,6 +139,10 @@ function OpenAIChat() {
       let role = messageObject.sender === "ChatGPT" ? "assistant" : "user";
       return { role: role, content: messageObject.message };
     });
+    const systemMessage = {
+      role: "system",
+      content: debug.prompt,
+    };
 
     const apiRequestBody = {
       model: "gpt-3.5-turbo",
@@ -172,45 +190,7 @@ function OpenAIChat() {
     }
   }
 
-  const handleSendMessage = (message) => {
-    const userMessage = { sender: "user", message: message };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    const newMessages = [...messages, userMessage];
-
-    (async () => {
-      setIsTyping(true);
-      await processMessageToChatGPT(newMessages);
-    })();
-  };
-
-  return (
-    <div className="flex flex-col h-full bg-gray-900">
-      <h1 className="text-3xl font-bold mb-4 text-white text-center">
-        Chat Panel
-      </h1>
-      <div className="flex-grow p-4 overflow-auto">
-        <ChatWindow messages={messages} isTyping={isTyping} />
-      </div>
-      <div className="p-4">
-        <ChatInput onSendMessage={handleSendMessage} />
-      </div>
-    </div>
-  );
-}
-
-function Chat({ debug }) {
-  const [messages, setMessages] = useState([
-    {
-      message: "Hello, I'm Gemini! Ask me anything!",
-      sentTime: "just now",
-      sender: "Gemini",
-    },
-  ]);
-
-  const [isTyping, setIsTyping] = useState(false);
   async function processMessageToGemini(chatMessages) {
-    const error = "Error: 'NoneType' object has no attribute 'group'";
     const prompt = debug.prompt;
     const updatedPrompt =
       prompt + chatMessages.map((message) => message.message).join(" ");
@@ -218,6 +198,7 @@ function Chat({ debug }) {
     try {
       const result = await model.generateContent(updatedPrompt);
       const response = await result.response;
+      console.log(response);
       setMessages([
         ...chatMessages,
         {
@@ -228,9 +209,25 @@ function Chat({ debug }) {
       ]);
       setIsTyping(false);
     } catch (error) {
+      const errorMessage =
+        (error.response &&
+          error.response.data &&
+          error.response.data.error &&
+          error.response.data.error.message) ||
+        "Please try again later or check your API key.";
+      setMessages([
+        ...chatMessages,
+        {
+          message: `Error communicating with Gemini API: ${errorMessage}`,
+          sender: "Gemini",
+          sentTime: "just now",
+        },
+      ]);
+      setIsTyping(false);
       console.error("Error communicating with Gemini API:", error);
     }
   }
+
   const handleSendMessage = (message) => {
     const userMessage = { sender: "user", message: message };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -239,19 +236,60 @@ function Chat({ debug }) {
 
     (async () => {
       setIsTyping(true);
-      await processMessageToGemini(newMessages);
+      if (chatType === "Chatgpt") {
+        await processMessageToChatGPT(newMessages);
+      } else {
+        await processMessageToGemini(newMessages);
+      }
     })();
   };
+  function handleReload() {
+    setReload((prev) => !prev);
+  }
+
   return (
-    <div className="flex flex-col h-full bg-gray-900">
-      <h1 className="text-3xl font-bold mb-4 text-white text-center">
-        AI Chat Support
-      </h1>
+    <div className="flex flex-col h-full bg-gray-900 rounded-lg">
+      <div className="justify-center flex space-x-3 text-3xl font-bold mb-4 text-white">
+        <p>AI Chat Support</p>
+        <span>
+          <button
+            class="flex items-center px-2 py-1 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-80"
+            onClick={handleReload}
+          >
+            <svg
+              class="w-4 h-4 mx-1"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span class="mx-1">Reset Chat</span>
+          </button>
+        </span>
+      </div>
+      <div className="flex justify-center space-x-4">
+        <label htmlFor="chatSupport" className="text-white text-sm">
+          {chatType ? "Selected Chat Support:" : "Select AI Chat Support"}
+        </label>
+        <select
+          id="chatSupport"
+          name="chatSupport"
+          onChange={(event) => setChatType((prev) => event.target.value)}
+        >
+          <option value="Gemini">Gemini</option>
+          <option value="Chatgpt">ChatGPT</option>
+        </select>
+      </div>
       <div className="flex-grow p-4 h-64">
         <ChatWindow messages={messages} isTyping={isTyping} />
       </div>
       <div className="p-4">
-        <ChatInput onSendMessage={handleSendMessage} />
+        <ChatInput onSendMessage={handleSendMessage} debug={debug} />
       </div>
     </div>
   );

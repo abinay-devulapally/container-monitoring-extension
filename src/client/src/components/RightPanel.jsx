@@ -32,7 +32,9 @@ function RightPanel({
           <Metrics />
         </Suspense>
       )}
-      {activePanel === "chat" && <Chat debug={debug} />}
+      {activePanel === "chat" && (
+        <Chat debug={debug} activePanel={activePanel} />
+      )}
     </div>
   );
 }

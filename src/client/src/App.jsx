@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import LeftPanel from "./components/LeftPanel.jsx";
 import RightPanel from "./components/RightPanel.jsx";
-import { fetchData } from "./utils/helper.js";
+import { fetchData, fetchAllContainers } from "./utils/helper.js";
 
 console.log("In App component");
 
@@ -17,13 +17,15 @@ const App = () => {
   const [debug, setDebug] = useState({
     debug: false,
     prompt: PROMPT,
+    debugDetails: "",
   });
 
   function handleDebugClick(containerDetails) {
     setDebug((prevState) => ({
       ...prevState,
       debug: !prevState.debug,
-      prompt: PROMPT + containerDetails,
+      prompt: PROMPT,
+      debugDetails: containerDetails,
     }));
   }
 

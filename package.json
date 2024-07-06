@@ -47,7 +47,7 @@
     "viewsWelcome": [
       {
         "view": "dashboard",
-        "contents": "Welcome to the Container Monitoring Extension for Visual Studio Code!\nMonitor and manage Docker containers health and status directly within the VS Code environment, featuring debug capabilities of containers with AI chat support.\n\n[Learn more](https://github.com/abinay-devulapally/container-monitoring-extension)\n\n[Start Monitoring](command:extension.startMonitoring)\n[Stop Monitoring](command:extension.stopMonitoring)\n[Open Dashboard](command:extension.openDashboard)"
+        "contents": "Welcome to the Container Monitoring Extension for Visual Studio Code!\nMonitor and manage Docker containers health and status directly within the VS Code environment, featuring debug capabilities of containers with AI chat support.\n\n[Learn more](https://github.com/abinay-devulapally/container-monitoring-extension)\n\n[Start Monitoring](command:extension.startMonitoring)\n[Stop Monitoring](command:extension.stopMonitoring)\n[Open Dashboard](command:extension.openDashboard)\n[Enter API Key](command:extension.setApiKey)"
       }
     ],
     "commands": [
@@ -62,6 +62,10 @@
       {
         "command": "extension.openDashboard",
         "title": "Container Monitoring Dashboard"
+      },
+      {
+        "command": "extension.setApiKey",
+        "title": "Enter Your API Key"
       }
     ]
   },
