@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 
 import LeftPanel from "./components/LeftPanel.jsx";
 import RightPanel from "./components/RightPanel.jsx";
-import { fetchData, fetchAllContainers } from "./utils/helper.js";
+import ErrorComponent from "./components/ErrorComponent.jsx";
+
+import AppError from "./utils/AppError.js";
 
 console.log("In App component");
 
@@ -13,7 +15,7 @@ const App = () => {
   const [activePanel, setActivePanel] = useState("containers");
   const [alertData, setAlertData] = useState([]);
   const [alarmData, setAlarmData] = useState([]);
-  const [containerData, setContainerData] = useState([]);
+  const [error, setError] = useState(null);
   const [debug, setDebug] = useState({
     debug: false,
     prompt: PROMPT,
@@ -34,25 +36,37 @@ const App = () => {
   };
 
   useEffect(() => {
-    let modifiedData;
     async function processAlertData() {
-      const fetchedData = await fetchData();
-      const fetchContainerData = [];
-      fetchedData.forEach((element) => {
-        const containerName = element.service;
-        const containerDetails = element.details;
-        fetchContainerData.push({ containerName, containerDetails });
-      });
-      modifiedData = fetchedData.filter((data) => data.isAlarm === true);
-      setAlertData(fetchedData);
-      setAlarmData(modifiedData);
-      setContainerData(fetchContainerData);
+      try {
+        const response = await fetch("http://localhost:8000/api/v1/alerts");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new AppError(errorData.message, response.status);
+        }
+        const fetchedData = await response.json();
+        const modifiedData = fetchedData.filter(
+          (data) => data.isAlarm === true
+        );
+
+        setAlertData(fetchedData);
+        setAlarmData(modifiedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        if (error.statusCode === 404) {
+          setError(
+            "Failed to fetch data, please check request URL and try again."
+          );
+        } else {
+          setError(`Failed to fetch data with error: ${error.message}`);
+        }
+      }
     }
+
     processAlertData();
   }, [activePanel]);
 
   return (
-    <div class="flex">
+    <div className="flex">
       <LeftPanel
         activePanel={activePanel}
         alertData={alertData}
@@ -62,10 +76,10 @@ const App = () => {
         setDebug={handleDebugClick}
       />
       <RightPanel
+        error={error}
         activePanel={activePanel}
         alertData={alertData}
         alarmData={alarmData}
-        containerData={containerData}
         debug={debug}
         setDebug={handleDebugClick}
       />

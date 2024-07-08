@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-router.post("/alerts", async (req, res) => {
+router.post("/alerts", async (req, res, next) => {
   const { Alert } = req.app.get("models");
   try {
     const data = req.body;
@@ -30,11 +30,11 @@ router.post("/alerts", async (req, res) => {
 
     res.status(201).json(alert);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-router.post("/clear-alert", async (req, res) => {
+router.post("/clear-alert", async (req, res, next) => {
   const { Alert } = req.app.get("models");
   try {
     const data = req.body;
@@ -78,11 +78,11 @@ router.post("/clear-alert", async (req, res) => {
       .status(400)
       .json({ message: "Alert status must be 'cleared' to delete" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-router.get("/alerts", async (req, res) => {
+router.get("/alerts", async (req, res, next) => {
   const { Alert } = req.app.get("models");
   try {
     const severity = req.query.severity;
@@ -98,11 +98,11 @@ router.get("/alerts", async (req, res) => {
     const alerts = await Alert.findAll(query);
     res.json(alerts);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-router.put("/alerts/:alertId", async (req, res) => {
+router.put("/alerts/:alertId", async (req, res, next) => {
   const { Alert } = req.app.get("models");
   try {
     const data = req.body;
@@ -115,11 +115,11 @@ router.put("/alerts/:alertId", async (req, res) => {
     await alert.update(data);
     res.json({ message: "Alert updated" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-router.delete("/alerts/:alertId", async (req, res) => {
+router.delete("/alerts/:alertId", async (req, res, next) => {
   const { Alert } = req.app.get("models");
   try {
     const alert = await Alert.findByPk(req.params.alertId);
@@ -131,11 +131,11 @@ router.delete("/alerts/:alertId", async (req, res) => {
     await alert.destroy();
     res.json({ message: "Alert deleted" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-router.delete("/clear-all-alerts", async (req, res) => {
+router.delete("/clear-all-alerts", async (req, res, next) => {
   const { Alert } = req.app.get("models");
   try {
     const alertsToClear = await Alert.findAll({
@@ -150,7 +150,7 @@ router.delete("/clear-all-alerts", async (req, res) => {
 
     res.json({ message: "All alerts cleared successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

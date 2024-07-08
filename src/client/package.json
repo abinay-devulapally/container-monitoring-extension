@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@azure/arm-containerinstance": "^9.1.0",
+    "@azure/identity": "^4.3.0",
     "@google/generative-ai": "^0.14.0",
     "chart.js": "^4.4.3",
     "mini-css-extract-plugin": "^2.9.0",
@@ -17,6 +19,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^9.0.1",
+    "react-select": "^5.8.0",
     "react-syntax-highlighter": "^15.5.0"
   },
   "devDependencies": {

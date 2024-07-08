@@ -8,9 +8,7 @@ const Modal = ({ isOpen, onClose, container }) => {
     return d instanceof Date && !isNaN(d);
   }
 
-  // Function to format the date into a human-readable string
   function formatDateTime(timestamp) {
-    // Ensure timestamp is valid and numeric
     if (typeof timestamp === "number" && !isNaN(timestamp)) {
       const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
       if (isValidDate(date)) {

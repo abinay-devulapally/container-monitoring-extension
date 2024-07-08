@@ -4,17 +4,10 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-const chatgptApiKey = window.chatgptApiKey;
-const geminiApiKey = window.geminiApiKey;
+import ChatAPIModal from "./ChatAPIModal";
 
-const API_KEY = chatgptApiKey;
-
-const GEMINI_API_KEY = "AIzaSyDwUPafUKjH0QVHNerraIOPsHX7FLBFv4g";
-
-// Access your API key as an environment variable (see "Set up your API key" above)
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+sessionStorage.removeItem("chatgptApiKey");
+sessionStorage.removeItem("geminiApiKey");
 
 const ChatWindow = ({ messages, isTyping }) => {
   const chatEndRef = useRef(null);
@@ -64,7 +57,7 @@ const ChatWindow = ({ messages, isTyping }) => {
             </div>
           </div>
         ))}
-        {isTyping && <TypingIndicator content="Gemini is typing" />}
+        {isTyping && <TypingIndicator content="Typing..." />}
         <div ref={chatEndRef} />
       </div>
     </div>
@@ -121,6 +114,33 @@ function Chat({ activePanel, debug }) {
   const [chatType, setChatType] = useState("Gemini");
   const [reload, setReload] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  let chatgptApiKey, geminiApiKey;
+
+  if (!window.chatgptApiKey || !window.geminiApiKey) {
+    chatgptApiKey = sessionStorage.getItem("chatgptApiKey");
+    geminiApiKey = sessionStorage.getItem("geminiApiKey");
+  } else {
+    chatgptApiKey = window.chatgptApiKey;
+    geminiApiKey = window.geminiApiKey;
+  }
+
+  const ChatGPT_API_KEY = chatgptApiKey;
+  const GEMINI_API_KEY = geminiApiKey;
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmit = (keys) => {
+    console.log("Submitted API Keys:", keys);
+    sessionStorage.setItem("chatgptApiKey", keys.chatgptApiKey);
+    sessionStorage.setItem("geminiApiKey", keys.geminiApiKey);
+  };
 
   useEffect(() => {
     setMessages([
@@ -155,7 +175,7 @@ function Chat({ activePanel, debug }) {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer " + API_KEY,
+            Authorization: "Bearer " + ChatGPT_API_KEY,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(apiRequestBody),
@@ -191,6 +211,8 @@ function Chat({ activePanel, debug }) {
   }
 
   async function processMessageToGemini(chatMessages) {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = debug.prompt;
     const updatedPrompt =
       prompt + chatMessages.map((message) => message.message).join(" ");
@@ -198,7 +220,6 @@ function Chat({ activePanel, debug }) {
     try {
       const result = await model.generateContent(updatedPrompt);
       const response = await result.response;
-      console.log(response);
       setMessages([
         ...chatMessages,
         {
@@ -253,23 +274,32 @@ function Chat({ activePanel, debug }) {
         <p>AI Chat Support</p>
         <span>
           <button
-            class="flex items-center px-2 py-1 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-80"
+            className="flex items-center px-2 py-1 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-80"
             onClick={handleReload}
           >
             <svg
-              class="w-4 h-4 mx-1"
+              className="w-4 h-4 mx-1"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
-              <path
-                fill-rule="evenodd"
-                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                clip-rule="evenodd"
-              />
+              <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" />
             </svg>
-            <span class="mx-1">Reset Chat</span>
+            <span className="mx-1">Reset Chat</span>
           </button>
+        </span>
+        <span>
+          <button
+            className="flex items-center px-2 py-1 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-80"
+            onClick={handleOpenModal}
+          >
+            <span className="mx-1">API keys</span>
+          </button>
+          <ChatAPIModal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmit}
+          />
         </span>
       </div>
       <div className="flex justify-center space-x-4">

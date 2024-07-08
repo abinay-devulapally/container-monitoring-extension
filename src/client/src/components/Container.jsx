@@ -1,43 +1,23 @@
 import React, { useState, useEffect } from "react";
 
+import ErrorComponent from "./ErrorComponent";
 import Modal from "./Modal"; // Adjust path as necessary
+
+const CACHE_KEY = "containerData";
+
+localStorage.removeItem("containerData");
 
 async function fetchAllContainers() {
   try {
-    const response = await fetch("http://localhost:8000/containers/all");
+    const response = await fetch("http://localhost:8000/api/v1/containers/all");
     if (!response.ok) {
       throw new Error("Failed to fetch data");
     }
     const data = await response.json();
-    return data; // Return the data fetched
+    return data;
   } catch (error) {
-    console.error("Error fetching data: ", error);
+    console.error("Error fetching data:", error);
   }
-}
-
-function Container_Element({ containerName, containerDetails, setDebug }) {
-  return (
-    <div className="bg-zinc-800 text-white shadow-lg rounded-lg overflow-hidden">
-      <div className="px-6 py-4">
-        <div className="font-bold text-2xl mb-2">{containerName}</div>
-        <p className="text-sm italic">{containerDetails}</p>
-      </div>
-      <button
-        onClick={() => setDebug(containerDetails)}
-        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Debug
-      </button>
-      <div className="px-6 py-4">
-        <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-          #Tag1
-        </span>
-        <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-          #Tag2
-        </span>
-      </div>
-    </div>
-  );
 }
 
 function AllContainers({
@@ -148,27 +128,6 @@ function AllContainers({
   );
 }
 
-const ContainerFailedList = ({ containers, setDebug }) => (
-  <>
-    {containers.length === 0 ? (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-zinc-300 italic">No containers to display</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {containers.map((container, index) => (
-          <Container_Element
-            key={index}
-            containerName={container.containerName}
-            containerDetails={container.containerDetails}
-            setDebug={setDebug}
-          />
-        ))}
-      </div>
-    )}
-  </>
-);
-
 const ContainerList = ({ containers, setDebug }) => (
   <>
     {containers.length === 0 ? (
@@ -206,20 +165,42 @@ const ContainerList = ({ containers, setDebug }) => (
   </>
 );
 
-function Container({ containerData, setDebug }) {
-  const [allContainer, setAllContainer] = useState([]);
+function Container({ setDebug }) {
+  const [allContainers, setAllContainers] = useState([]);
   const [reload, setReload] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
     async function processContainerData() {
-      console.log("Fetching container data...");
-      const fetchContainerData = await fetchAllContainers();
-      setAllContainer(fetchContainerData);
+      try {
+        const cachedData = localStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+          setAllContainers(JSON.parse(cachedData));
+          setLoading(false);
+        } else {
+          const fetchedData = await fetchAllContainers();
+          localStorage.setItem(CACHE_KEY, JSON.stringify(fetchedData));
+          setAllContainers(fetchedData);
+          setLoading(false);
+        }
+      } catch (error) {
+        // console.error("Error fetching container data:", error);
+        setError(
+          "Failed to fetch data from the backend server. Please try again later."
+        );
+        // Handle the error here, e.g. set an error state or show a message to the user
+      }
     }
     processContainerData();
   }, [reload]);
+  if (error) {
+    return <ErrorComponent />;
+  }
 
   function handleReload() {
+    localStorage.removeItem(CACHE_KEY);
     setReload((prev) => !prev);
+    setLoading(true);
   }
   return (
     <div>
@@ -227,26 +208,27 @@ function Container({ containerData, setDebug }) {
         <p>Containers Management</p>
         <span>
           <button
-            class="flex items-center px-2 py-1 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-gray-800 focus:outline-none focus:ring focus:ring-gray-300 focus:ring-opacity-80"
+            className="flex items-center px-2 py-1 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-gray-800 focus:outline-none focus:ring focus:ring-gray-300 focus:ring-opacity-80"
             onClick={handleReload}
           >
             <svg
-              class="w-4 h-4 mx-1"
+              className="w-4 h-4 mx-1"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
-              <path
-                fill-rule="evenodd"
-                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                clip-rule="evenodd"
-              />
+              <path d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" />
             </svg>
-            <span class="mx-1">Refresh</span>
+            <span className="mx-1">Refresh</span>
           </button>
         </span>
       </div>
-      <ContainerList containers={allContainer} setDebug={setDebug} />
+      {loading && (
+        <div className="flex justify-center items-center h-screen">
+          <p className="text-zinc-300 italic">Loading...</p>
+        </div>
+      )}
+      <ContainerList containers={allContainers} setDebug={setDebug} />
       {/* <ContainerFailedList containers={containerData} setDebug={setDebug} /> */}
     </div>
   );

@@ -2,9 +2,12 @@ const express = require("express");
 const sqlite3 = require("sqlite3");
 const { Sequelize, DataTypes } = require("sequelize");
 const alertRoutes = require("./routes/alert");
+const globalErrorHandler = require("./errorController");
 const containerRoutes = require("./routes/container");
+const azureRoutes = require("./routes/azure");
 const portfinder = require("portfinder");
 const cors = require("cors");
+const AppError = require("./appError");
 
 const app = express();
 app.use(express.json());
@@ -57,20 +60,39 @@ const Alert = sequelize.define("Alert", {
   },
 });
 
-// Attach sequelize and models to the app
-app.set("sequelize", sequelize);
-app.set("models", { Alert });
-
-// Routes
-app.use("/", alertRoutes);
-app.use("/containers", containerRoutes);
-
-// Error handling
-app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ error: err.message });
+const SubscriptionResource = sequelize.define("SubscriptionResource", {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  subscriptionId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  resourceLabel: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 });
 
-// Function to reset database
+// Attach sequelize and models to the app
+app.set("sequelize", sequelize);
+app.set("models", { Alert, SubscriptionResource });
+
+// Routes
+app.use("/api/v1/", alertRoutes);
+app.use("/api/v1/containers", containerRoutes);
+
+app.use("/api/v1/azure", azureRoutes);
+
+// Error handling
+app.all("*", (req, res, next) => {
+  next(new AppError(`can't find ${req.originalUrl} on the server`, 404));
+});
+
+app.use(globalErrorHandler);
+
 const resetDatabase = async () => {
   try {
     await sequelize.sync({ force: true });
