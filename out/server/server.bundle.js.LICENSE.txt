@@ -253,6 +253,10 @@ object-assign
  * MIT Licensed
  */
 
+/*! @azure/msal-common v14.13.0 2024-07-01 */
+
+/*! @azure/msal-node v2.10.0 2024-07-01 */
+
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
 
 /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */

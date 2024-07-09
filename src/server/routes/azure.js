@@ -61,27 +61,27 @@ router.get("/resourcegroups", async (req, res, next) => {
   }
 });
 
-router.post("/subscription-details", async (req, res, next) => {
-  try {
-    const { SubscriptionResource } = req.app.get("models");
-    const { selectedSubscription, selectedResourceGroup } = req.body;
+// router.post("/subscription-details", async (req, res, next) => {
+//   try {
+//     const { SubscriptionResource } = req.app.get("models");
+//     const { selectedSubscription, selectedResourceGroup } = req.body;
 
-    // Save data to the database using Sequelize model
-    const newSubscriptionResource = await SubscriptionResource.create({
-      subscriptionId: selectedSubscription.value,
-      resourceLabel: selectedResourceGroup.label,
-    });
+//     // Save data to the database using Sequelize model
+//     const newSubscriptionResource = await SubscriptionResource.create({
+//       subscriptionId: selectedSubscription.value,
+//       resourceLabel: selectedResourceGroup.label,
+//     });
 
-    // Respond with a success message or updated data
-    res.status(201).json({
-      message: "Subscription details saved successfully",
-      subscriptionResource: newSubscriptionResource,
-    });
-  } catch (error) {
-    console.error("Error saving subscription details:", error);
-    next(error);
-  }
-});
+//     // Respond with a success message or updated data
+//     res.status(201).json({
+//       message: "Subscription details saved successfully",
+//       subscriptionResource: newSubscriptionResource,
+//     });
+//   } catch (error) {
+//     console.error("Error saving subscription details:", error);
+//     next(error);
+//   }
+// });
 
 router.get("/containers", async (req, res, next) => {
   const { azureSubscriptionId, resourceGroupName } = req.query;

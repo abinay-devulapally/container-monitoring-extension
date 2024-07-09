@@ -38,6 +38,7 @@ const App = () => {
   useEffect(() => {
     async function processAlertData() {
       try {
+        setError(null);
         const response = await fetch("http://localhost:8000/api/v1/alerts");
         if (!response.ok) {
           const errorData = await response.json();

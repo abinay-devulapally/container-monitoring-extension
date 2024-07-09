@@ -163,7 +163,6 @@ const Modal = ({ isOpen, onClose, container }) => {
                 ))}
               </div>
             </div>
-
             {/* Add more details as needed */}
           </div>
         </div>

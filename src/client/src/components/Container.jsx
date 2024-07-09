@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
 
 import ErrorComponent from "./ErrorComponent";
-import Modal from "./Modal"; // Adjust path as necessary
+import Modal from "./Modal";
+import LoadingSpinner from "./LoadingSpinner";
+import AppError from "../utils/AppError";
 
 const CACHE_KEY = "containerData";
 
 localStorage.removeItem("containerData");
 
 async function fetchAllContainers() {
-  try {
-    const response = await fetch("http://localhost:8000/api/v1/containers/all");
-    if (!response.ok) {
-      throw new Error("Failed to fetch data");
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching data:", error);
+  const response = await fetch("http://localhost:8000/api/v1/containers/all");
+  if (!response.ok) {
+    throw new AppError("Failed to fetch data", response.status);
   }
+  const data = await response.json();
+  return data;
 }
 
 function AllContainers({
@@ -34,7 +32,6 @@ function AllContainers({
   containerMemoryUsage,
   containerRestartCount,
   containerMounts,
-  containerLogs,
   containerHealthCheck,
   setDebug,
 }) {
@@ -84,7 +81,7 @@ function AllContainers({
           <div className="flex items-center justify-between">
             <button
               onClick={openModal}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 text-xs rounded"
             >
               View Details
             </button>
@@ -95,7 +92,7 @@ function AllContainers({
                     `${displayName} Healthcheck failed explain how to resolve it`
                   )
                 }
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 text-xs rounded"
               >
                 Debug
               </button>
@@ -120,7 +117,6 @@ function AllContainers({
           containerMemoryUsage,
           containerRestartCount,
           containerMounts,
-          containerLogs,
           containerHealthCheck,
         }}
       />
@@ -131,7 +127,7 @@ function AllContainers({
 const ContainerList = ({ containers, setDebug }) => (
   <>
     {containers.length === 0 ? (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-64">
         <p className="text-zinc-300 italic">No containers to display</p>
       </div>
     ) : (
@@ -155,7 +151,6 @@ const ContainerList = ({ containers, setDebug }) => (
             containerMemoryUsage={container.MemoryUsage}
             containerRestartCount={container.RestartCount}
             containerMounts={container.Mounts}
-            containerLogs={container.Logs}
             containerHealthCheck={container.HealthCheck}
             setDebug={setDebug}
           />
@@ -173,6 +168,7 @@ function Container({ setDebug }) {
   useEffect(() => {
     async function processContainerData() {
       try {
+        setError(null);
         const cachedData = localStorage.getItem(CACHE_KEY);
         if (cachedData) {
           setAllContainers(JSON.parse(cachedData));
@@ -184,18 +180,14 @@ function Container({ setDebug }) {
           setLoading(false);
         }
       } catch (error) {
-        // console.error("Error fetching container data:", error);
+        console.error("Error fetching container data:", error);
         setError(
           "Failed to fetch data from the backend server. Please try again later."
         );
-        // Handle the error here, e.g. set an error state or show a message to the user
       }
     }
     processContainerData();
   }, [reload]);
-  if (error) {
-    return <ErrorComponent />;
-  }
 
   function handleReload() {
     localStorage.removeItem(CACHE_KEY);
@@ -204,7 +196,7 @@ function Container({ setDebug }) {
   }
   return (
     <div>
-      <div className="flex space-x-3 text-3xl font-bold mb-4 text-white">
+      <div className="flex items-center space-x-3 text-3xl font-bold mb-4 text-white">
         <p>Containers Management</p>
         <span>
           <button
@@ -223,13 +215,13 @@ function Container({ setDebug }) {
           </button>
         </span>
       </div>
-      {loading && (
-        <div className="flex justify-center items-center h-screen">
-          <p className="text-zinc-300 italic">Loading...</p>
-        </div>
+      {error ? (
+        <ErrorComponent message={error} debug={true} />
+      ) : loading ? (
+        <LoadingSpinner />
+      ) : (
+        <ContainerList containers={allContainers} setDebug={setDebug} />
       )}
-      <ContainerList containers={allContainers} setDebug={setDebug} />
-      {/* <ContainerFailedList containers={containerData} setDebug={setDebug} /> */}
     </div>
   );
 }

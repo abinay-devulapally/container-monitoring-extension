@@ -3,108 +3,38 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Formatted Text with Tailwind CSS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrollable Container List</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="p-8">
+<body class="bg-gray-800 text-white">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4">Containers Management</h1>
+        <div class="overflow-auto h-[calc(100vh-150px)]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Example container cards -->
+                <div class="bg-gray-700 p-4 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-bold mb-2">Container 1</h2>
+                    <p>Image: example/image</p>
+                    <p class="text-green-500">Status: Running</p>
+                    <p class="text-sm italic">State: running</p>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">View
+                        Details</button>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-bold mb-2">Container 2</h2>
+                    <p>Image: example/image</p>
+                    <p class="text-red-500">Status: Unhealthy</p>
+                    <p class="text-sm italic">State: stopped</p>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">View
+                        Details</button>
+                </div>
 
-    <div id="output" class="prose prose-lg"></div>
-
-    <script>
-        const rawText = `
-        ## Debugging "my-flask-container1 Healthcheck failed"
-
-        You're encountering a common issue with Docker healthchecks. Let's break down the problem and find a solution.
-
-        **Understanding the Error:**
-
-        The message "my-flask-container1 (a883a71cf99b) Healthcheck failed" indicates that the healthcheck defined in your Dockerfile is failing. This doesn't necessarily mean your Flask application is broken; it just means the healthcheck script itself isn't returning a successful exit code.
-
-        **Possible Causes:**
-
-        1. **Incorrect Healthcheck Script:**  The most likely culprit is a flaw in your healthcheck script. This could involve:
-           - **Network Issues:** Your script might be trying to access a service or resource that's unavailable, either internally or externally.
-           - **Logic Errors:** The script might have incorrect logic for determining health, leading to false negatives.
-           - **Permission Errors:** If your script relies on accessing files or resources, it might lack the necessary permissions.
-
-        2. **Startup Time:** Your Flask application might be taking longer to start than the healthcheck interval, leading to false failures.
-
-        3. **Resource Constraints:** The container might not have enough resources (CPU, memory) to successfully run the healthcheck script.
-
-        **Healthcheck File Example:**
-
-        \`\`\`dockerfile
-        FROM python:3.9
-
-        # ... other Dockerfile instructions
-
-        HEALTHCHECK --interval=5s --timeout=3s --retries=3 \\
-          CMD ["curl", "-f", "http://localhost:5000/healthz"]
-
-        # ... other Dockerfile instructions
-        \`\`\`
-
-        **Debugging Steps:**
-
-        1. **Inspect the Healthcheck Script:**
-           - **Examine the command:** Ensure it's well-formed and matches the expected behavior.
-           - **Check Network Access:** Test network connectivity from within the container to any external or internal services your healthcheck relies on.
-           - **Validate Logic:** Review your script's logic to ensure it accurately reflects the application's health criteria.
-           - **Verify Permissions:**  Confirm that your script has the required permissions to access files or resources it needs.
-
-        2. **Increase Startup Time:**
-           - **Healthcheck Interval:** Adjust the \`--interval\` flag to a longer interval to give your Flask application more time to start.
-           - **Healthcheck Timeout:** Increase the \`--timeout\` flag to allow more time for the healthcheck command to complete.
-           - **Startup Script:** Consider adding a script to your Dockerfile that executes once the container starts, waiting for your Flask application to become ready.
-
-        3. **Resource Allocation:**
-           - **CPU and Memory:**  Increase the CPU and memory allocated to your container in the Docker run command or in your container orchestrator configuration.
-
-        **Best Practices:**
-
-        * **Keep it Simple:**  Design your healthcheck script to be as simple as possible, focusing on essential checks.
-        * **Test Thoroughly:**  Test your healthcheck script extensively under different conditions to catch potential issues.
-        * **Document Clearly:**  Document the logic and assumptions of your healthcheck script for future reference.
-        * **Consider External Monitoring:**  Utilize external monitoring tools or services to provide a more comprehensive view of your container's health.
-
-        **Alternative Approaches:**
-
-        * **External Health Check:**  Use external monitoring tools to check your application's health through exposed endpoints.
-        * **Custom Health Check:** Develop a custom health check script written in Python or your preferred language, giving you more control and flexibility.
-        * **Container Orchestrator Features:** Leverage healthcheck features provided by container orchestrators like Kubernetes or Docker Swarm.
-
-        **Remember, the key is to identify the root cause of the healthcheck failure and address it accordingly. By understanding the intricacies of Docker healthchecks, you can build robust and reliable containerized applications.**
-        `;
-
-        function formatTextForHtml(text) {
-            const lines = text.split('\n');
-            let formattedText = '';
-            let inCodeBlock = false;
-
-            lines.forEach(line => {
-                if (line.startsWith('```')) {
-                    inCodeBlock = !inCodeBlock;
-                    if (inCodeBlock) {
-                        formattedText += '<pre class="bg-gray-800 text-white p-4 rounded"><code>';
-                    } else {
-                        formattedText += '</code></pre>';
-                    }
-                } else {
-                    if (inCodeBlock) {
-                        formattedText += line + '\n';
-                    } else {
-                        formattedText += '<p>' + line + '</p>';
-                    }
-                }
-            });
-
-            return formattedText;
-        }
-
-        document.getElementById('output').innerHTML = formatTextForHtml(rawText);
-    </script>
-
+                <!-- Repeat similar container cards as needed -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

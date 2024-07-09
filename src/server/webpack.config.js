@@ -35,6 +35,10 @@ module.exports = {
 
   // Resolve extensions
   resolve: {
+    fallback: {
+      "cpu-features": false,
+      "./crypto/build/Release/sshcrypto.node": false,
+    },
     extensions: [".js"],
   },
   // External dependencies configuration

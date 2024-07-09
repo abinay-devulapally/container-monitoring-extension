@@ -60,30 +60,30 @@ const Alert = sequelize.define("Alert", {
   },
 });
 
-const SubscriptionResource = sequelize.define("SubscriptionResource", {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  subscriptionId: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  resourceLabel: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+// const SubscriptionResource = sequelize.define("SubscriptionResource", {
+//   id: {
+//     type: DataTypes.UUID,
+//     defaultValue: DataTypes.UUIDV4,
+//     primaryKey: true,
+//   },
+//   subscriptionId: {
+//     type: DataTypes.STRING,
+//     allowNull: false,
+//   },
+//   resourceLabel: {
+//     type: DataTypes.STRING,
+//     allowNull: false,
+//   },
+// });
 
 // Attach sequelize and models to the app
 app.set("sequelize", sequelize);
-app.set("models", { Alert, SubscriptionResource });
+app.set("models", { Alert });
+// app.set("models", { Alert, SubscriptionResource });
 
 // Routes
 app.use("/api/v1/", alertRoutes);
 app.use("/api/v1/containers", containerRoutes);
-
 app.use("/api/v1/azure", azureRoutes);
 
 // Error handling
@@ -147,6 +147,6 @@ const stopServer = () => {
 };
 
 // Start the server
-startServer();
+// startServer();
 
 module.exports = { startServer, stopServer };

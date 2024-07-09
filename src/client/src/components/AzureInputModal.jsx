@@ -103,7 +103,7 @@ const AzureInputModal = ({ isOpen, onClose, onSubmit }) => {
             {error && <p style={{ color: "red" }}>{error}</p>}
             <div className="form-group">
               <label htmlFor="subscriptions" className="block mb-1">
-                Select Subscription
+                Subscriptions
               </label>
               <Select
                 id="subscriptions"
@@ -112,12 +112,16 @@ const AzureInputModal = ({ isOpen, onClose, onSubmit }) => {
                 value={selectedSubscription}
                 styles={customStyles}
                 classNamePrefix="react-select"
+                placeholder={
+                  localStorage.getItem("lastSubscriptionId") ||
+                  "Select Subscription"
+                }
               />
             </div>
 
             <div className="form-group">
               <label htmlFor="resource-groups" className="block mb-1">
-                Select Resource Group
+                Resource Groups
               </label>
               <Select
                 id="resource-groups"
@@ -128,6 +132,10 @@ const AzureInputModal = ({ isOpen, onClose, onSubmit }) => {
                 isDisabled={!selectedSubscription}
                 styles={customStyles}
                 classNamePrefix="react-select"
+                placeholder={
+                  localStorage.getItem("lastResourceGroup") ||
+                  "Select Resource Group"
+                }
               />
             </div>
             <br />

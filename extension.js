@@ -33,8 +33,6 @@ function activate(context) {
         password: true,
       });
 
-      console.log(apiKey);
-
       if (apiKey) {
         const keyName =
           apiKeyType === "ChatGPT API Key" ? "chatgptApiKey" : "geminiApiKey";
@@ -106,6 +104,8 @@ function activate(context) {
       const chatgptApiKey = await context.secrets.get("chatgptApiKey");
       const geminiApiKey = await context.secrets.get("geminiApiKey");
 
+      console.log("From vscode", chatgptApiKey, geminiApiKey);
+
       const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.file(
           path.join(context.extensionPath, "out", "client", "client_bundle.js")
@@ -127,15 +127,6 @@ function activate(context) {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Container Monitoring Dashboard</title>
                 <link href="${styleUri}" rel="stylesheet">
-                <style>
-                    .panel-content {
-                        display: none;
-                    }
-
-                    .panel-content.active {
-                        display: block;
-                    }
-                </style>
                 <script type="module" src="${scriptUri}"></script>
                 <script>
                   window.chatgptApiKey = "${chatgptApiKey}";
@@ -143,8 +134,9 @@ function activate(context) {
                 </script>
             </head>
 
-            <body class="bg-gray-100">
+            <body class="bg-gray-500">
                 <div id="root"></div>
+                <div id="portal-root"></div>
                 <script>
                     console.log('Loading bundle.js');
                 </script>

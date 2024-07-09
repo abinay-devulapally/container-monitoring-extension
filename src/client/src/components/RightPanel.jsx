@@ -10,7 +10,7 @@ import Chat from "./Chat";
 function SubAlertSidePanel({ handleNavigation, currentPage }) {
   return (
     <div className="flex items-center justify-start bg-gray-900 p-2 -m-4">
-      <ul className="flex space-x-4 text-white  list-none m-0 p-2">
+      <ul className="flex space-x-4 text-white m-0 p-2">
         <li>
           <a
             onClick={() => handleNavigation("alerts")}
@@ -49,7 +49,7 @@ function SubAlertSidePanel({ handleNavigation, currentPage }) {
 function SubContainerSidePanel({ handleNavigation, currentPage }) {
   return (
     <div className="flex items-center justify-start bg-gray-900 p-2 -m-4">
-      <ul className="flex space-x-4 text-white  list-none m-0 p-2">
+      <ul className="flex space-x-4 text-white m-0 p-2">
         <li>
           <a
             onClick={() => handleNavigation("containers")}
@@ -109,6 +109,7 @@ function RightAlertSidePanel({
         {currentPage === "prometheus" && (
           <div>This is prometheus AlertManager Page</div>
         )}
+        {currentPage === "projects" && <div>This is Projects Page</div>}
       </div>
     </>
   );
@@ -159,7 +160,7 @@ function RightPanel({
       {activePanel === "metrics" && (
         <Suspense
           fallback={
-            <div className="flex justify-center items-center h-screen">
+            <div className="flex justify-center items-center h-64">
               <p className="text-zinc-300 italic">Loading...</p>
             </div>
           }

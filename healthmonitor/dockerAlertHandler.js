@@ -133,7 +133,7 @@ class DockerAlertHandler {
           true
         );
         this.showNotification("error", Alarmdetails);
-        await this.sendRequest("alerts", createdAlarm);
+        await this.sendRequest("api/v1/alerts", createdAlarm);
         this.raisedAlarms.add(event.service);
       }
       if (!this.raisedAlerts.has(event.service)) {
@@ -145,7 +145,7 @@ class DockerAlertHandler {
           alertDetails
         );
         this.showNotification("warn", alertDetails);
-        await this.sendRequest("alerts", createdAlert);
+        await this.sendRequest("api/v1/alerts", createdAlert);
         this.raisedAlerts.add(event.service);
       }
     } catch (error) {
@@ -179,7 +179,7 @@ class DockerAlertHandler {
             "cleared"
           );
           await this.clearNotification(`${service} alert cleared`);
-          await this.sendRequest("clear-alert", createdClearedAlert);
+          await this.sendRequest("api/v1/clear-alert", createdClearedAlert);
           this.showNotification("info", `${service} alert cleared`);
           this.raisedAlerts.delete(raisedAlert);
         }
@@ -200,7 +200,7 @@ class DockerAlertHandler {
             "cleared"
           );
           await this.clearNotification(`${service} alarm cleared and healthy`);
-          await this.sendRequest("clear-alert", createdClearedAlarm);
+          await this.sendRequest("api/v1/clear-alert", createdClearedAlarm);
           this.showNotification("info", `${service} alarm cleared and healthy`);
           this.raisedAlarms.delete(raisedAlarm);
         }

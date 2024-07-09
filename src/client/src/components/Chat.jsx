@@ -1,132 +1,45 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import React, { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
+import React, { useEffect, useState } from "react";
+import { ChatInput, ChatWindow } from "./ChatDisplay";
 
 import ChatAPIModal from "./ChatAPIModal";
 
 sessionStorage.removeItem("chatgptApiKey");
 sessionStorage.removeItem("geminiApiKey");
-
-const ChatWindow = ({ messages, isTyping }) => {
-  const chatEndRef = useRef(null);
-
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  return (
-    <div className="bg-gray-800 p-2 rounded-lg shadow-md h-full flex flex-col overflow-y-auto">
-      <div className="flex-grow">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`my-2 p-2 rounded-lg ${
-              message.sender === "user"
-                ? "bg-blue-500 text-white self-end"
-                : "bg-gray-700 text-white self-start"
-            }`}
-          >
-            <div className="p-3 prose prose-lg text-sm">
-              <ReactMarkdown
-                components={{
-                  code({ node, inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || "");
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={okaidia}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, "")}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  },
-                }}
-              >
-                {message.message}
-              </ReactMarkdown>
-            </div>
-          </div>
-        ))}
-        {isTyping && <TypingIndicator content="Typing..." />}
-        <div ref={chatEndRef} />
-      </div>
-    </div>
-  );
-};
-
-const TypingIndicator = ({ content }) => {
-  return (
-    <div className="flex justify-center items-center text-gray-200 italic">
-      {content}
-    </div>
-  );
-};
-
-function ChatInput({ onSendMessage, debug }) {
-  const initialInput = debug.debug ? debug.debugDetails : "";
-  const [input, setInput] = useState(initialInput);
-
-  const handleSend = () => {
-    if (input.trim()) {
-      onSendMessage(input);
-      setInput("");
-    }
-  };
-
-  useEffect(() => {
-    if (debug.debug && initialInput.trim()) {
-      onSendMessage(initialInput);
-      setInput("");
-    }
-  }, []);
-
-  return (
-    <div className="flex">
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && handleSend()}
-        className="flex-grow p-2 rounded-l-lg bg-gray-700 text-white border-none focus:ring-2 focus:ring-blue-500"
-        placeholder="Type a message..."
-      />
-      <button
-        onClick={handleSend}
-        className="p-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600"
-      >
-        Send
-      </button>
-    </div>
-  );
-}
+sessionStorage.removeItem("chatHistory");
 
 function Chat({ activePanel, debug }) {
   const [chatType, setChatType] = useState("Gemini");
   const [reload, setReload] = useState(false);
   const [messages, setMessages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  let chatgptApiKey, geminiApiKey;
+  const [chatgptApiKey, setChatgptApiKey] = useState(() => {
+    return (
+      window.chatgptApiKey || sessionStorage.getItem("chatgptApiKey") || ""
+    );
+  });
 
-  if (!window.chatgptApiKey || !window.geminiApiKey) {
-    chatgptApiKey = sessionStorage.getItem("chatgptApiKey");
-    geminiApiKey = sessionStorage.getItem("geminiApiKey");
-  } else {
-    chatgptApiKey = window.chatgptApiKey;
-    geminiApiKey = window.geminiApiKey;
-  }
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    return window.geminiApiKey || sessionStorage.getItem("geminiApiKey") || "";
+  });
 
-  const ChatGPT_API_KEY = chatgptApiKey;
-  const GEMINI_API_KEY = geminiApiKey;
+  useEffect(() => {
+    const storedChatgptApiKey = sessionStorage.getItem("chatgptApiKey");
+    const storedGeminiApiKey = sessionStorage.getItem("geminiApiKey");
+
+    if (chatgptApiKey !== storedChatgptApiKey) {
+      sessionStorage.setItem("chatgptApiKey", chatgptApiKey);
+    }
+
+    if (geminiApiKey !== storedGeminiApiKey) {
+      sessionStorage.setItem("geminiApiKey", geminiApiKey);
+    }
+  }, [chatgptApiKey, geminiApiKey]);
+
+  const handleSubmit = (keys) => {
+    setChatgptApiKey(keys.chatgptApiKey);
+    setGeminiApiKey(keys.geminiApiKey);
+  };
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -136,21 +49,31 @@ function Chat({ activePanel, debug }) {
     setIsModalOpen(false);
   };
 
-  const handleSubmit = (keys) => {
-    console.log("Submitted API Keys:", keys);
-    sessionStorage.setItem("chatgptApiKey", keys.chatgptApiKey);
-    sessionStorage.setItem("geminiApiKey", keys.geminiApiKey);
-  };
+  useEffect(() => {
+    // Function to initialize or restore chat messages from session storage
+    const initializeChatMessages = () => {
+      const storedMessages = sessionStorage.getItem("chatHistory");
+      if (storedMessages) {
+        setMessages(JSON.parse(storedMessages));
+      } else {
+        const initialMessage = {
+          message: `Hello, I'm ${chatType}! Ask me anything!`,
+          sentTime: "just now",
+          sender: chatType,
+        };
+        setMessages([initialMessage]);
+        // Save initial message to session storage
+        sessionStorage.setItem("chatHistory", JSON.stringify([initialMessage]));
+      }
+    };
+
+    initializeChatMessages();
+  }, [chatType, reload]);
 
   useEffect(() => {
-    setMessages([
-      {
-        message: `Hello, I'm ${chatType}! Ask me anything!`,
-        sentTime: "just now",
-        sender: chatType,
-      },
-    ]);
-  }, [chatType, activePanel, reload]);
+    if (messages.length > 0)
+      sessionStorage.setItem("chatHistory", JSON.stringify(messages));
+  }, [messages, reload]);
 
   const [isTyping, setIsTyping] = useState(false);
 
@@ -175,7 +98,7 @@ function Chat({ activePanel, debug }) {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer " + ChatGPT_API_KEY,
+            Authorization: "Bearer " + chatgptApiKey,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(apiRequestBody),
@@ -211,12 +134,11 @@ function Chat({ activePanel, debug }) {
   }
 
   async function processMessageToGemini(chatMessages) {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = debug.prompt;
     const updatedPrompt =
       prompt + chatMessages.map((message) => message.message).join(" ");
-
     try {
       const result = await model.generateContent(updatedPrompt);
       const response = await result.response;
@@ -264,13 +186,20 @@ function Chat({ activePanel, debug }) {
       }
     })();
   };
+
   function handleReload() {
+    sessionStorage.removeItem("chatHistory");
     setReload((prev) => !prev);
+  }
+
+  function handleChatType(event) {
+    setChatType(event.target.value);
+    sessionStorage.removeItem("chatHistory");
   }
 
   return (
     <div className="flex flex-col h-full bg-gray-900 rounded-lg">
-      <div className="justify-center flex space-x-3 text-3xl font-bold mb-4 text-white">
+      <div className="justify-center items-center flex space-x-3 text-3xl font-bold mb-4 mt-4 text-white">
         <p>AI Chat Support</p>
         <span>
           <button
@@ -309,7 +238,10 @@ function Chat({ activePanel, debug }) {
         <select
           id="chatSupport"
           name="chatSupport"
-          onChange={(event) => setChatType((prev) => event.target.value)}
+          className="bg-black text-white border border-gray-700 rounded-lg"
+          onChange={(event) => {
+            handleChatType(event);
+          }}
         >
           <option value="Gemini">Gemini</option>
           <option value="Chatgpt">ChatGPT</option>
