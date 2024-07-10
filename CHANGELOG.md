@@ -2,6 +2,23 @@
 
 Change log of Live Container Monitoring Extension.
 
+## [1.1.4] - 2024-07-10
+
+### Added
+
+- Support for Azure Container Instances.
+- Improved AI chat support for failed containers and support for all programming queries, providing quick assistance and troubleshooting.
+- Updated monitoring dashboard UI for a more streamlined experience.
+
+### Changed
+
+- Optimized the performance of the extension.
+- Enhanced user experience with updated interface components.
+
+### Fixed
+
+- Minor bugs related to container health status updates.
+
 ## [1.1.2] - 2024-07-02
 
 ### Added

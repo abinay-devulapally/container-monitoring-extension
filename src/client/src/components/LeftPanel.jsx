@@ -30,8 +30,8 @@ function LeftPanel({
             onClick={() => handlePanelClick("containers")}
           >
             Containers{"  "}
-            {alertLength > 0 && (
-              <span className="text-yellow-500 text-sm">{alertLength}</span>
+            {alarmLength > 0 && (
+              <span className="text-red-600 text-sm">{alarmLength}</span>
             )}
           </a>
         </li>

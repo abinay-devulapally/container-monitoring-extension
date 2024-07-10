@@ -104,8 +104,6 @@ function activate(context) {
       const chatgptApiKey = await context.secrets.get("chatgptApiKey");
       const geminiApiKey = await context.secrets.get("geminiApiKey");
 
-      console.log("From vscode", chatgptApiKey, geminiApiKey);
-
       const scriptUri = panel.webview.asWebviewUri(
         vscode.Uri.file(
           path.join(context.extensionPath, "out", "client", "client_bundle.js")
@@ -134,7 +132,7 @@ function activate(context) {
                 </script>
             </head>
 
-            <body class="bg-gray-500">
+            <body class="bg-gray-950">
                 <div id="root"></div>
                 <div id="portal-root"></div>
                 <script>
@@ -157,6 +155,7 @@ function activate(context) {
 
 // This method is called when your extension is deactivated
 function deactivate() {
+  console.log("Deactivating extension...");
   if (alertHandler && eventHandler) {
     alertHandler.stop();
     eventHandler.stop();
@@ -164,7 +163,6 @@ function deactivate() {
     alertHandler = null;
     eventHandler = null;
   }
-
   stopServer();
 }
 
