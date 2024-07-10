@@ -17,6 +17,7 @@ _Experience seamless container monitoring and management with our extension._
 - Automatically clear notifications when containers are healthy again.
 
 ![Alert Notification](images/vscode_alerts.png)
+
 _Stay updated with real-time notifications and alerts directly in VS Code._
 
 ### Container Lifecycle Management
@@ -48,6 +49,7 @@ _Get instant support for your container issues through AI chat._
 - Monitor live container metrics and stats to keep an eye on performance and resource usage.
 
 ![container metrics](images/monitoring_dashboard_metrics.png)
+
 _Track and analyze your container performance with live metrics._
 
 ## Requirements
