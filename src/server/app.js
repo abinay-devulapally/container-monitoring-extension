@@ -147,6 +147,6 @@ const stopServer = () => {
 };
 
 // Start the server
-// startServer();
+startServer();
 
 module.exports = { startServer, stopServer };
