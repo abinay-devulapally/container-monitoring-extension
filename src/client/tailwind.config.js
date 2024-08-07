@@ -8,6 +8,18 @@ module.exports = {
   theme: {
     extend: {
       // Optionally extend Tailwind's default theme here
+      tooltip: {
+        DEFAULT: {
+          bg: "black",
+          text: "white",
+          borderRadius: "0.375rem",
+          padding: "0.5rem",
+        },
+      },
+      colors: {
+        "tooltip-bg": "#000",
+        "tooltip-text": "#fff",
+      },
     },
   },
   plugins: [

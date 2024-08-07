@@ -127,7 +127,7 @@ const startServer = async () => {
 
         // Start your server on the found port
         server = app.listen(port, () => {
-          console.log(`Server running on http://0.0.0.0:${port}`);
+          console.log(`Server running on http://localhost:${port}`);
         });
       })
       .catch((err) => {

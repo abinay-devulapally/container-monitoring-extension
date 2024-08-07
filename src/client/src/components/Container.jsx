@@ -7,7 +7,7 @@ import AppError from "../utils/AppError";
 
 const CACHE_KEY = "containerData";
 
-localStorage.removeItem("containerData");
+sessionStorage.removeItem("containerData");
 
 async function fetchAllContainers() {
   const response = await fetch("http://localhost:8000/api/v1/containers/all");
@@ -160,7 +160,24 @@ const ContainerList = ({ containers, setDebug }) => (
   </>
 );
 
+const Notification = ({ message, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000); // Hide notification after 3 seconds
+
+    return () => clearTimeout(timer); // Cleanup on component unmount
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg">
+      {message}
+    </div>
+  );
+};
+
 const ContainerRow = ({
+  containerId,
   containerName,
   containerImage,
   containerStatus,
@@ -176,8 +193,11 @@ const ContainerRow = ({
   containerMounts,
   containerHealthCheck,
   setDebug,
+  refreshContainers,
 }) => {
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null); // State for notification
 
   const openModal = () => {
     setShowModal(true);
@@ -185,6 +205,32 @@ const ContainerRow = ({
 
   const closeModal = () => {
     setShowModal(false);
+  };
+
+  const handleAction = async (action) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/v1/containers/${action}/${containerId}`,
+        {
+          method: "POST",
+        }
+      );
+      if (!response.ok) {
+        throw new AppError(`Failed to ${action} container`, response.status);
+      }
+      await response.json();
+      refreshContainers(); // Refresh the list after performing the action
+      setNotification(
+        `${action.charAt(0).toUpperCase() + action.slice(1)} action completed.`
+      ); // Show notification
+    } catch (error) {
+      console.error(`Error ${action} container:`, error);
+      // setDebug(`${containerName} failed to ${action}. ${error.message}`);
+      setNotification(`Failed to ${action} container.`); // Show notification
+    } finally {
+      setLoading(false);
+    }
   };
 
   const displayName = containerName.replace("/", "");
@@ -203,30 +249,33 @@ const ContainerRow = ({
 
   return (
     <>
-      <div className="grid grid-cols-12 gap-2 bg-gray-950 p-4 rounded-lg shadow-lg mb-4">
+      <div className="items-center grid grid-cols-12 gap-2 bg-gray-950 p-4 rounded-lg shadow-lg mb-4">
         <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold text-lg tooltip truncate-container">
           <span className="tooltiptext">{displayName}</span>
+          {displayName}
         </div>
         <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 text-sm italic tooltip truncate-container">
           <span className="tooltiptext">{containerImage}</span>
+          {containerImage}
         </div>
         <div
           className={`col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 text-sm ${getStatusColorClass()}`}
         >
-          Status: {containerStatus}
+          {containerStatus}
         </div>
         <div
           className={`col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-1 text-sm ${getStateColorClass()}`}
         >
-          State: {containerState}
+          {containerState}
         </div>
         <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 text-sm">
-          Created: {new Date(containerCreated).toLocaleString()}
+          {new Date(containerCreated).toLocaleString()}
         </div>
         <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-2 flex justify-end space-x-2">
           <button
-            onClick={() => setDebug(`${displayName} Restart action`)}
-            className="flex items-center space-x-1 text-green-200 bg-gray-800 py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-110"
+            onClick={() => handleAction("restart")}
+            className="flex items-center space-x-1 text-green-200"
+            disabled={loading}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -238,15 +287,15 @@ const ContainerRow = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-6 h-6"
             >
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
             </svg>
           </button>
 
           <button
-            onClick={() => setDebug(`${displayName} Start action`)}
-            className="flex items-center space-x-1 text-green-500 bg-gray-800 py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-110"
+            onClick={() => handleAction("start")}
+            className="flex flex-col items-center m-4 text-green-500"
+            disabled={loading}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -258,15 +307,15 @@ const ContainerRow = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-6 h-6"
             >
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
           </button>
 
           <button
-            onClick={() => setDebug(`${displayName} Stop action`)}
+            onClick={() => handleAction("stop")}
             className="flex flex-col items-center m-4 text-red-500"
+            disabled={loading}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -313,7 +362,7 @@ const ContainerRow = ({
                   `${displayName} Healthcheck failed explain how to resolve it`
                 )
               }
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 text-xs rounded"
+              className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 text-xs rounded"
             >
               Debug
             </button>
@@ -340,61 +389,77 @@ const ContainerRow = ({
           containerHealthCheck,
         }}
       />
+      {notification && (
+        <Notification
+          message={notification}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </>
   );
 };
 
-const ContainerListNew = ({ containers, setDebug }) => {
+const ContainerListNew = ({ containers, refreshContainers, setDebug }) => {
   return (
-    <div className="container mx-auto px-4">
-      <div className="grid grid-cols-12 gap-2 bg-gray-800 text-white p-4 rounded-lg shadow-lg mb-4">
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
-          Container Name
+    <>
+      {containers.length === 0 ? (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-zinc-300 italic">No containers to display</p>
         </div>
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
-          Image
-        </div>
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
-          Status
-        </div>
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-1 font-bold">
-          State
-        </div>
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
-          Created
-        </div>
-        <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-2 font-bold text-right">
-          Actions
-        </div>
-      </div>
+      ) : (
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-12 gap-2 bg-gray-800 text-white p-4 rounded-lg shadow-lg mb-4">
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
+              Name
+            </div>
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
+              Image
+            </div>
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
+              Status
+            </div>
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-1 font-bold">
+              State
+            </div>
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 font-bold">
+              Created
+            </div>
+            <div className="col-span-12 sm:col-span-12 md:col-span-12 lg:col-span-2 font-bold text-right">
+              Actions
+            </div>
+          </div>
 
-      <div
-        id="container-list"
-        className="overflow-auto text-white"
-        style={{ maxHeight: "500px" }}
-      >
-        {containers.map((container) => (
-          <ContainerRow
-            key={container.Id}
-            containerName={container.Name}
-            containerImage={container.Image}
-            containerStatus={container.Status}
-            containerState={container.State}
-            containerCreated={container.Created}
-            containerPorts={container.Ports}
-            containerLabels={container.Labels}
-            containerNetworkMode={container.NetworkMode}
-            containerIPAddress={container.IPAddress}
-            containerCPUUsage={container.CPUUsage}
-            containerMemoryUsage={container.MemoryUsage}
-            containerRestartCount={container.RestartCount}
-            containerMounts={container.Mounts}
-            containerHealthCheck={container.HealthCheck}
-            setDebug={setDebug}
-          />
-        ))}
-      </div>
-    </div>
+          <div
+            id="container-list"
+            className="overflow-auto text-white"
+            style={{ maxHeight: "500px" }}
+          >
+            {containers.map((container) => (
+              <ContainerRow
+                key={container.Id}
+                containerId={container.Id}
+                containerName={container.Name}
+                containerImage={container.Image}
+                containerStatus={container.Status}
+                containerState={container.State}
+                containerCreated={container.Created}
+                containerPorts={container.Ports}
+                containerLabels={container.Labels}
+                containerNetworkMode={container.NetworkMode}
+                containerIPAddress={container.IPAddress}
+                containerCPUUsage={container.CPUUsage}
+                containerMemoryUsage={container.MemoryUsage}
+                containerRestartCount={container.RestartCount}
+                containerMounts={container.Mounts}
+                containerHealthCheck={container.HealthCheck}
+                setDebug={setDebug}
+                refreshContainers={refreshContainers}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -407,13 +472,13 @@ function Container({ setDebug }) {
     async function processContainerData() {
       try {
         setError(null);
-        const cachedData = localStorage.getItem(CACHE_KEY);
+        const cachedData = sessionStorage.getItem(CACHE_KEY);
         if (cachedData) {
           setAllContainers(JSON.parse(cachedData));
           setLoading(false);
         } else {
           const fetchedData = await fetchAllContainers();
-          localStorage.setItem(CACHE_KEY, JSON.stringify(fetchedData));
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify(fetchedData));
           setAllContainers(fetchedData);
           setLoading(false);
         }
@@ -428,10 +493,22 @@ function Container({ setDebug }) {
   }, [reload]);
 
   function handleReload() {
-    localStorage.removeItem(CACHE_KEY);
+    sessionStorage.removeItem(CACHE_KEY);
     setReload((prev) => !prev);
     setLoading(true);
   }
+
+  const refreshContainers = async () => {
+    try {
+      const fetchedData = await fetchAllContainers();
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(fetchedData));
+      setAllContainers(fetchedData);
+    } catch (error) {
+      console.error("Error refreshing containers:", error);
+      setDebug("Failed to refresh container data. " + error.message);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center space-x-3 text-3xl font-bold mb-4 text-white">
@@ -458,7 +535,11 @@ function Container({ setDebug }) {
       ) : loading ? (
         <LoadingSpinner />
       ) : (
-        <ContainerListNew containers={allContainers} setDebug={setDebug} />
+        <ContainerListNew
+          containers={allContainers}
+          refreshContainers={refreshContainers}
+          setDebug={setDebug}
+        />
       )}
     </div>
   );

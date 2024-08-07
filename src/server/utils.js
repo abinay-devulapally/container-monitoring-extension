@@ -53,4 +53,34 @@ module.exports = {
       return [];
     }
   },
+
+  async startContainer(containerId) {
+    try {
+      const container = docker.getContainer(containerId);
+      await container.start();
+    } catch (error) {
+      console.error("Error starting container:", error);
+      throw error;
+    }
+  },
+
+  async stopContainer(containerId) {
+    try {
+      const container = docker.getContainer(containerId);
+      await container.stop();
+    } catch (error) {
+      console.error("Error stopping container:", error);
+      throw error;
+    }
+  },
+
+  async restartContainer(containerId) {
+    try {
+      const container = docker.getContainer(containerId);
+      await container.restart();
+    } catch (error) {
+      console.error("Error restarting container:", error);
+      throw error;
+    }
+  },
 };

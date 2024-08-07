@@ -64,8 +64,8 @@ const getLast30MinutesLabels = () => {
 
 function processData(metrics) {
   // Assuming metrics is the result array from Prometheus
-  return metrics.map(metric => ({
-    container: metric.metric.container || 'Unknown',
+  return metrics.map((metric) => ({
+    container: metric.metric.container || "Unknown",
     values: metric.values.map(([timestamp, value]) => ({
       timestamp: convertTimestamp(timestamp),
       value: parseFloat(value),
@@ -81,25 +81,26 @@ function convertTimestamp(timestamp) {
   return `${hours}:${minutes}`;
 }
 
-
 async function fetchCPUMetrics() {
   const query = `sum(rate(container_cpu_usage_seconds_total[1m])) by (container)`;
   const start = new Date(Date.now() - 30 * 60 * 1000).toISOString(); // 30 minutes ago
   const end = new Date().toISOString(); // current time
-  const step = '30s';
+  const step = "30s";
 
-  const url = `http://localhost:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=${step}`;
+  const url = `http://localhost:9090/api/v1/query_range?query=${encodeURIComponent(
+    query
+  )}&start=${start}&end=${end}&step=${step}`;
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     const data = await response.json();
     const processedData = processData(data.data.result);
     return processedData[0]["values"];
   } catch (error) {
-    console.error('Error fetching CPU metrics:', error);
+    console.error("Error fetching CPU metrics:", error);
     return [];
   }
 }
@@ -108,31 +109,33 @@ async function fetchMemoryMetrics() {
   const query = `sum(container_memory_usage_bytes) by (container)`;
   const start = new Date(Date.now() - 30 * 60 * 1000).toISOString(); // 30 minutes ago
   const end = new Date().toISOString(); // current time
-  const step = '30s';
+  const step = "30s";
 
-  const url = `http://localhost:9090/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=${step}`;
+  const url = `http://localhost:9090/api/v1/query_range?query=${encodeURIComponent(
+    query
+  )}&start=${start}&end=${end}&step=${step}`;
 
-  console.log(url)
+  console.log(url);
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     const data = await response.json();
     const processedData = processData(data.data.result);
     return processedData[0]["values"];
   } catch (error) {
-    console.error('Error fetching Memory metrics:', error);
+    console.error("Error fetching Memory metrics:", error);
     return [];
   }
 }
 
 function Metrics() {
   const [selectedContainer, setSelectedContainer] = useState("redis");
-  const [cpuvalues, setcpuvalues] = useState([])
-  const [memoryvalues, setmemoryvalues] = useState([])
-  const [labelvalues, setlabelvalues] = useState([])
+  const [cpuvalues, setcpuvalues] = useState([]);
+  const [memoryvalues, setmemoryvalues] = useState([]);
+  const [labelvalues, setlabelvalues] = useState([]);
   const cpuChartRef = useRef(null);
   const memoryChartRef = useRef(null);
   const cpuChartInstance = useRef(null);
@@ -141,13 +144,15 @@ function Metrics() {
   useEffect(() => {
     const fetchData = async () => {
       const cpuMetrics = await fetchCPUMetrics();
-      const memoryMetrics = await fetchMemoryMetrics()
+      const memoryMetrics = await fetchMemoryMetrics();
       const cpuValues = cpuMetrics.map((cpuValues) => cpuValues.value);
       const labelValues = cpuMetrics.map((cpuValues) => cpuValues.timestamp);
-      const memoryValues = memoryMetrics.map((memoryValues) =>  (memoryValues.value / (1024 * 1024 * 1024)).toFixed(2))
+      const memoryValues = memoryMetrics.map((memoryValues) =>
+        (memoryValues.value / (1024 * 1024 * 1024)).toFixed(2)
+      );
       setcpuvalues(cpuValues);
-      setmemoryvalues(memoryValues)
-      setlabelvalues(labelValues) // Do something with the CPU values
+      setmemoryvalues(memoryValues);
+      setlabelvalues(labelValues); // Do something with the CPU values
     };
     fetchData();
   }, []);
@@ -155,7 +160,6 @@ function Metrics() {
   useEffect(() => {
     const cpuCtx = cpuChartRef.current.getContext("2d");
     const memoryCtx = memoryChartRef.current.getContext("2d");
-
 
     const labels = labelvalues;
 
