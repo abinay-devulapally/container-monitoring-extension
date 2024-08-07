@@ -73,8 +73,7 @@
     "build": "webpack --mode production",
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "vscode-test",
-    "postinstall": "npm rebuild"
+    "test": "vscode-test"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -92,7 +91,6 @@
   },
   "dependencies": {
     "async": "^3.2.5",
-    "dockerode": "^4.0.2",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7"
   }

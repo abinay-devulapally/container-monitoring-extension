@@ -11,5 +11,6 @@ vsc-extension-quickstart.md
 testing_ignore/**
 # IMPORTANT 
 src/**
+healthmonitor/**
 # node_modules/**
 extension.js
