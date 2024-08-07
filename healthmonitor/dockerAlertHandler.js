@@ -1,5 +1,4 @@
 const vscode = require("vscode");
-const axios = require("axios");
 const os = require("os");
 
 const {
@@ -40,17 +39,15 @@ class DockerAlertHandler {
 
   async sendRequest(endpoint, alert) {
     try {
-      const response = await axios.post(
-        `${this.hostAddress}/${endpoint}`,
-        alert,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${this.hostAddress}/${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(alert),
+      });
 
-      if (response.status === 200 || response.status === 201) {
+      if (response.ok) {
         console.info(
           `${
             endpoint.charAt(0).toUpperCase() + endpoint.slice(1)
@@ -63,24 +60,7 @@ class DockerAlertHandler {
         );
       }
     } catch (error) {
-      if (error.response) {
-        // Log the full response object to understand the server's error message
-        console.error(
-          `Error ${endpoint} alert: ${error.response.status} - ${JSON.stringify(
-            error.response.data,
-            null,
-            2
-          )}`
-        );
-      } else if (error.request) {
-        // Log the request that was made and didn't receive a response
-        console.error(
-          `Error ${endpoint} alert: No response received - ${error.request}`
-        );
-      } else {
-        // Log any other errors that occurred during setup
-        console.error(`Error ${endpoint} alert: ${error.message}`);
-      }
+      console.error(`Error ${endpoint} alert: ${error.message}`);
     }
   }
 

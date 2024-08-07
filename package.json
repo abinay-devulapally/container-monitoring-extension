@@ -91,10 +91,6 @@
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "async": "^3.2.5",
-    "axios": "^1.7.2",
-    "dockerode": "^4.0.2",
-    "react": "^18.3.1",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7"
   }
