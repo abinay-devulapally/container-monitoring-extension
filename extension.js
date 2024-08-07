@@ -1,8 +1,8 @@
 const vscode = require("vscode");
 const path = require("path");
 const { startServer, stopServer } = require("./out/server/server.bundle");
-// const DockerAlertHandler = require("./healthmonitor/dockerAlertHandler");
-// const DockerEventHandler = require("./healthmonitor/dockerEventHandler");
+const DockerAlertHandler = require("./healthmonitor/dockerAlertHandler");
+const DockerEventHandler = require("./healthmonitor/dockerEventHandler");
 
 startServer();
 
@@ -47,46 +47,46 @@ function activate(context) {
   );
 
   // Command to start monitoring
-  // let startMonitoring = vscode.commands.registerCommand(
-  //   "extension.startMonitoring",
-  //   function () {
-  //     if (!alertHandler && !eventHandler) {
-  //       const queue = [];
+  let startMonitoring = vscode.commands.registerCommand(
+    "extension.startMonitoring",
+    function () {
+      if (!alertHandler && !eventHandler) {
+        const queue = [];
 
-  //       alertHandler = new DockerAlertHandler(queue);
-  //       eventHandler = new DockerEventHandler(queue);
+        alertHandler = new DockerAlertHandler(queue);
+        eventHandler = new DockerEventHandler(queue);
 
-  //       alertHandler.run();
-  //       eventHandler.run();
+        alertHandler.run();
+        eventHandler.run();
 
-  //       vscode.window.showInformationMessage("Container Monitoring Started!");
-  //     } else {
-  //       vscode.window.showInformationMessage(
-  //         "Container Monitoring is already running."
-  //       );
-  //     }
-  //   }
-  // );
+        vscode.window.showInformationMessage("Container Monitoring Started!");
+      } else {
+        vscode.window.showInformationMessage(
+          "Container Monitoring is already running."
+        );
+      }
+    }
+  );
 
   // // Command to stop monitoring
-  // let stopMonitoring = vscode.commands.registerCommand(
-  //   "extension.stopMonitoring",
-  //   function () {
-  //     if (alertHandler && eventHandler) {
-  //       alertHandler.stop();
-  //       eventHandler.stop();
+  let stopMonitoring = vscode.commands.registerCommand(
+    "extension.stopMonitoring",
+    function () {
+      if (alertHandler && eventHandler) {
+        alertHandler.stop();
+        eventHandler.stop();
 
-  //       alertHandler = null;
-  //       eventHandler = null;
+        alertHandler = null;
+        eventHandler = null;
 
-  //       vscode.window.showInformationMessage("Container Monitoring Stopped!");
-  //     } else {
-  //       vscode.window.showInformationMessage(
-  //         "Container Monitoring is not running."
-  //       );
-  //     }
-  //   }
-  // );
+        vscode.window.showInformationMessage("Container Monitoring Stopped!");
+      } else {
+        vscode.window.showInformationMessage(
+          "Container Monitoring is not running."
+        );
+      }
+    }
+  );
 
   // Command to open the dashboard
   let openDashboard = vscode.commands.registerCommand(
@@ -148,8 +148,8 @@ function activate(context) {
   );
 
   context.subscriptions.push(setApiKey);
-  // context.subscriptions.push(startMonitoring);
-  // context.subscriptions.push(stopMonitoring);
+  context.subscriptions.push(startMonitoring);
+  context.subscriptions.push(stopMonitoring);
   context.subscriptions.push(openDashboard);
 }
 

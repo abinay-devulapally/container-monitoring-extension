@@ -12,7 +12,11 @@ module.exports = {
     libraryTarget: "commonjs2",
   },
 
-  externals: [nodeExternals()], // Exclude node_modules
+  externals: [
+    nodeExternals({
+      allowlist: ["dockerode", "async", "sequelize", "sqlite3"],
+    }),
+  ], // Exclude node_modules
 
   module: {
     rules: [
