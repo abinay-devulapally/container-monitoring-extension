@@ -90,7 +90,7 @@ No known issues at this time. Please report any bugs or feature requests through
 - Improved AI chat support with better troubleshooting suggestions.
 - Updated the monitoring dashboard UI for a more streamlined experience.
 
-### 1.1.5 (Current)
+### 1.1.6 (Current)
 
 - UI Update
 

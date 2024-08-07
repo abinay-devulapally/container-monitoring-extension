@@ -2,7 +2,7 @@
 
 Change log of Live Container Monitoring Extension.
 
-## [1.1.5] - 2024-08-07
+## [1.1.6] - 2024-08-07
 
 ### Changed
 
