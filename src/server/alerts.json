@@ -1,0 +1,10 @@
+[
+  {
+    "severity": "Info",
+    "host": "Windows Server",
+    "service": "flask",
+    "details": "Server is down",
+    "isAlarm": false,
+    "status": "active"
+  }
+]

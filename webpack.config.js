@@ -2,22 +2,18 @@ const path = require("path");
 const nodeExternals = require("webpack-node-externals");
 
 module.exports = {
-  target: "node", // since this is a VSCode extension
-
-  entry: "./extension.js", // Adjust the entry point to extension.js
-
+  target: "node",
+  entry: "./extension.js",
   output: {
-    filename: "extension.bundle.js", // Output bundle name
+    filename: "extension.bundle.js",
     path: path.resolve(__dirname, "out"),
     libraryTarget: "commonjs2",
   },
-
   externals: [
     nodeExternals({
-      allowlist: ["dockerode", "async", "sequelize", "sqlite3"],
+      allowlist: ["dockerode", "async"],
     }),
-  ], // Exclude node_modules
-
+  ],
   module: {
     rules: [
       {
@@ -26,7 +22,7 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env", "@babel/preset-react"],
+            presets: ["@babel/preset-env"],
           },
         },
       },
@@ -36,8 +32,7 @@ module.exports = {
       },
     ],
   },
-
   resolve: {
-    extensions: [".js", ".jsx"],
+    extensions: [".js", ".jsx", ".node"],
   },
 };
