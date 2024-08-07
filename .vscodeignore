@@ -11,5 +11,5 @@ vsc-extension-quickstart.md
 testing_ignore/**
 # IMPORTANT 
 src/**
-node_modules/**
+# node_modules/**
 extension.js
