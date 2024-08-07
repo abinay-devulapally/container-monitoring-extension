@@ -91,6 +91,8 @@
   },
   "dependencies": {
     "async": "^3.2.5",
-    "dockerode": "^4.0.2"
+    "docker-modem": "^5.0.3",
+    "dockerode": "^4.0.2",
+    "tar-fs": "^3.0.6"
   }
 }

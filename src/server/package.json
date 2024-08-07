@@ -15,10 +15,7 @@
     "dockerode": "^4.0.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "pg-hstore": "^2.3.4",
-    "portfinder": "^1.0.32",
-    "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7"
+    "portfinder": "^1.0.32"
   },
   "author": "Abinay Kumar Devulapally",
   "license": "ISC",

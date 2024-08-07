@@ -14,3 +14,4 @@ src/**
 healthmonitor/**
 # node_modules/**
 extension.js
+alerts.json

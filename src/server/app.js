@@ -169,6 +169,6 @@ const stopServer = () => {
 };
 
 // Start the server when development only
-startServer();
+// startServer();
 
 module.exports = { startServer, stopServer };
