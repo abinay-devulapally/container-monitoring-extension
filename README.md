@@ -84,11 +84,15 @@ No known issues at this time. Please report any bugs or feature requests through
 - Fixed minor bugs in alert handling.
 - Enhanced user interface for better user experience.
 
-### 1.1.4 (Current)
+### 1.1.4
 
 - Added support for Azure Container Instances.
 - Improved AI chat support with better troubleshooting suggestions.
 - Updated the monitoring dashboard UI for a more streamlined experience.
+
+### 1.1.5 (Current)
+
+- UI Update
 
 ## Getting Started
 
