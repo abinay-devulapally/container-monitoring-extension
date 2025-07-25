@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense, useEffect } from "react";
 import Container from "./Container";
 import AzureContainers from "./AzureContainers";
+import AwsContainers from "./AwsContainer";
 import Alerts from "./Alerts";
 import Alarms from "./Alarms";
 
@@ -70,6 +71,16 @@ function SubContainerSidePanel({ handleNavigation, currentPage }) {
             Azure Containers
           </a>
         </li>
+        <li>
+          <a
+            onClick={() => handleNavigation("Aws Containers")}
+            className={`rounded-md px-3 py-2 font-medium ${
+              currentPage === "Aws Containers" ? "bg-gray-700" : ""
+            }`}
+          >
+            Aws Containers
+          </a>
+        </li>
       </ul>
     </div>
   );
@@ -85,6 +96,7 @@ function RightContainerSidePanel({ setDebug, handleNavigation, currentPage }) {
       <div className="mt-8">
         {currentPage === "containers" && <Container setDebug={setDebug} />}
         {currentPage === "Azure Containers" && <AzureContainers />}
+        {currentPage === "Aws Containers" && <AwsContainers />}
       </div>
     </>
   );
