@@ -88,7 +88,7 @@ app.use(cors());
 // Routes
 // app.use("/api/v1/", alertRoutes);
 app.use("/api/v1/", alertControllerRoutes);
-app.use("/api/v1/containers", containerRoutes);
+app.use("/api/v1/container", containerRoutes);
 app.use("/api/v1/azure", azureRoutes);
 app.use("/api/v1/aws", awsRoutes);
 
@@ -171,6 +171,6 @@ const stopServer = () => {
 };
 
 // Start the server when development only
-startServer();
+// startServer();
 
 module.exports = { startServer, stopServer };

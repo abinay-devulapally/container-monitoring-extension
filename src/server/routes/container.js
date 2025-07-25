@@ -54,4 +54,45 @@ router.post("/restart/:id", async (req, res, next) => {
   }
 });
 
+// Search containers by name, image, or status (case-insensitive, partial match)
+router.get("/search", async (req, res, next) => {
+  try {
+    const { name, image, status } = req.query;
+    const containers = await checkAllContainers();
+
+    // If no search params, return all
+    if (!name && !image && !status) {
+      return res.status(200).json(containers);
+    }
+
+    const filtered = containers.filter((container) => {
+      let match = true;
+      if (name) {
+        match =
+          match &&
+          container.Name &&
+          container.Name.toLowerCase().includes(name.toLowerCase());
+      }
+      if (image) {
+        match =
+          match &&
+          container.Image &&
+          container.Image.toLowerCase().includes(image.toLowerCase());
+      }
+      if (status) {
+        match =
+          match &&
+          container.Status &&
+          container.Status.toLowerCase().includes(status.toLowerCase());
+      }
+      return match;
+    });
+
+    res.status(200).json(filtered);
+  } catch (error) {
+    console.error("Error searching containers:", error.message);
+    next(error);
+  }
+});
+
 module.exports = router;

@@ -10,12 +10,28 @@ const CACHE_KEY = "containerData";
 sessionStorage.removeItem("containerData");
 
 async function fetchAllContainers() {
-  const response = await fetch("http://localhost:8000/api/v1/containers/all");
+  const response = await fetch("http://localhost:8000/api/v1/container/all"); // <-- change "containers" to "container"
   if (!response.ok) {
     throw new AppError("Failed to fetch data", response.status);
   }
   const data = await response.json();
   return data;
+}
+
+// Add this function to fetch search results from the backend
+async function searchContainers({ name, image, status }) {
+  const params = new URLSearchParams();
+  if (name) params.append("name", name);
+  if (image) params.append("image", image);
+  if (status) params.append("status", status);
+
+  const response = await fetch(
+    `http://localhost:8000/api/v1/container/search?${params.toString()}`
+  );
+  if (!response.ok) {
+    throw new AppError("Failed to search containers", response.status);
+  }
+  return await response.json();
 }
 
 const Notification = ({ id, message, onClose }) => {
@@ -83,7 +99,7 @@ const ContainerRow = ({
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/v1/containers/${action}/${containerId}`,
+        `http://localhost:8000/api/v1/container/${action}/${containerId}`,
         {
           method: "POST",
         }
@@ -368,10 +384,16 @@ const ContainerListNew = ({ containers, refreshContainers, setDebug }) => {
 
 function Container({ setDebug }) {
   const [allContainers, setAllContainers] = useState([]);
-  const [filter, setFilter] = useState("running"); // State to manage the filter option
+  const [filter, setFilter] = useState("running");
   const [reload, setReload] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // New state for search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
+  const [searchImage, setSearchImage] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     async function processContainerData() {
@@ -414,6 +436,34 @@ function Container({ setDebug }) {
     }
   };
 
+  // New: handle search
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setIsSearching(true);
+    try {
+      const results = await searchContainers({
+        name: searchTerm,
+        image: searchImage,
+        status: searchStatus,
+      });
+      setAllContainers(results);
+    } catch (error) {
+      setError("Failed to search containers. " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // New: handle clear search
+  const handleClearSearch = async () => {
+    setSearchTerm("");
+    setSearchImage("");
+    setSearchStatus("");
+    setIsSearching(false);
+    handleReload();
+  };
+
   const filteredContainers = allContainers.filter((container) => {
     if (filter === "running") return container.State === "running";
     if (filter === "exited") return container.State === "exited";
@@ -452,6 +502,50 @@ function Container({ setDebug }) {
           </select>
         </div>
       </div>
+
+      {/* Search Bar */}
+      <form
+        onSubmit={handleSearch}
+        className="flex flex-wrap items-center space-x-2 mb-4"
+      >
+        <input
+          type="text"
+          placeholder="Search by name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="bg-gray-700 text-white p-2 rounded mb-2"
+        />
+        <input
+          type="text"
+          placeholder="Search by image"
+          value={searchImage}
+          onChange={(e) => setSearchImage(e.target.value)}
+          className="bg-gray-700 text-white p-2 rounded mb-2"
+        />
+        <input
+          type="text"
+          placeholder="Search by status"
+          value={searchStatus}
+          onChange={(e) => setSearchStatus(e.target.value)}
+          className="bg-gray-700 text-white p-2 rounded mb-2"
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded mb-2"
+        >
+          Search
+        </button>
+        {isSearching && (
+          <button
+            type="button"
+            onClick={handleClearSearch}
+            className="bg-gray-500 text-white px-4 py-2 rounded mb-2"
+          >
+            Clear
+          </button>
+        )}
+      </form>
+
       {error ? (
         <ErrorComponent message={error} debug={true} />
       ) : loading ? (
