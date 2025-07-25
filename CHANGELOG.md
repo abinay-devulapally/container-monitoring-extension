@@ -2,6 +2,13 @@
 
 Change log of Live Container Monitoring Extension.
 
+## [1.2.0] - 2025-07-25
+
+### Added
+
+- New container dashboard view for improved visualization and management of running containers.
+- Search functionality to quickly find containers by name or status.
+
 ## [1.1.6] - 2024-08-07
 
 ### Changed

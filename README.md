@@ -1,6 +1,6 @@
 # Container Monitoring Extension for VSCode
 
-This extension allows users to monitor and receive alerts on the health status of Docker containers, manage Docker containers and Azure Container Instances, and debug using AI chat, directly within the VS Code environment.
+This extension allows users to monitor and receive alerts on the health status of Docker containers, manage Docker containers, Azure Container Instances, and AWS containers, and debug using AI chat, directly within the VS Code environment.
 
 ## Features
 
@@ -22,9 +22,9 @@ _Stay updated with real-time notifications and alerts directly in VS Code._
 
 ### Container Lifecycle Management
 
-- Manage the lifecycle of your containers and Azure Container Instances within a monitoring dashboard developed in ReactJS and Tailwind CSS.
+- Manage the lifecycle of your containers, Azure Container Instances, and AWS containers within a monitoring dashboard developed in ReactJS and Tailwind CSS.
 
-![Container's Management](images/1.1.4v/monitoring_dashboard.png)
+![Container's Management](images/v1.2.0/monitoring_dashboard.png)
 
 _Effectively manage your containers with an intuitive, interactive dashboard._
 
@@ -52,11 +52,17 @@ _Get instant support for your container issues through AI chat._
 
 _Track and analyze your container performance with live metrics._
 
+### New in v1.2.0
+
+- **New container dashboard view** for improved visualization and management of running containers.
+- **Search functionality** to quickly find containers by name or status.
+
 ## Requirements
 
 - **Docker**: Ensure Docker is installed and running on your system.
 - **DockerHealthCheck**: Ensure Docker HealthCheck is enabled.
 - **AzureCLI**: Make sure the Azure CLI is installed and that you are logged in. You can check this from the VS Code terminal by running `az login` or `az account list`. To log in with a specific tenant ID, use `az login --tenant <tenant-id>`.
+- **AWS CLI**: Make sure the AWS CLI is installed and configured. You can check this from the VS Code terminal by running `aws configure` and `aws sts get-caller-identity`.
 
 ## Extension Settings
 
@@ -68,21 +74,15 @@ No known issues at this time. Please report any bugs or feature requests through
 
 ## Release Notes
 
-### 1.0.0
+### 1.2.0
 
-- Initial release of the Container Monitoring Extension.
+- New container dashboard view for improved visualization and management of running containers.
+- Search functionality to quickly find containers by name or status.
+- Added support for AWS containers management alongside Azure Container Instances.
 
-### 1.1.0
+### 1.1.6
 
-- Added real-time alerts and notifications.
-- Introduced automatic clearing of alerts feature.
-- Introduced VS Code webview for the monitoring dashboard.
-
-### 1.1.2
-
-- Improved stability and performance.
-- Fixed minor bugs in alert handling.
-- Enhanced user interface for better user experience.
+- UI Update
 
 ### 1.1.4
 
@@ -90,9 +90,21 @@ No known issues at this time. Please report any bugs or feature requests through
 - Improved AI chat support with better troubleshooting suggestions.
 - Updated the monitoring dashboard UI for a more streamlined experience.
 
-### 1.1.6 (Current)
+### 1.1.2
 
-- UI Update
+- Improved stability and performance.
+- Fixed minor bugs in alert handling.
+- Enhanced user interface for better user experience.
+
+### 1.1.0
+
+- Added real-time alerts and notifications.
+- Introduced automatic clearing of alerts feature.
+- Introduced VS Code webview for the monitoring dashboard.
+
+### 1.0.0
+
+- Initial release of the Container Monitoring Extension.
 
 ## Getting Started
 
