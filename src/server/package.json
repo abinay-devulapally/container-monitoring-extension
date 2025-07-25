@@ -1,6 +1,6 @@
 {
   "name": "container-management-restapi",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "description": "Container management server(RESTAPI)",
   "main": "app.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "@azure/arm-resources": "^5.2.0",
     "@azure/arm-resources-subscriptions": "^2.1.0",
     "@azure/identity": "^4.3.0",
+    "aws-sdk": "^2.1672.0",
     "cors": "^2.8.5",
     "dockerode": "^4.0.2",
     "dotenv": "^16.4.5",

@@ -257,6 +257,8 @@ object-assign
 
 /*! @azure/msal-node v2.10.0 2024-07-01 */
 
+/*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
+
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
 
 /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */

@@ -8,6 +8,7 @@ const alertControllerRoutes = require("./routes/alertController");
 const globalErrorHandler = require("./errorController");
 const containerRoutes = require("./routes/container");
 const azureRoutes = require("./routes/azure");
+const awsRoutes = require("./routes/aws");
 const portfinder = require("portfinder");
 const cors = require("cors");
 const AppError = require("./appError");
@@ -87,8 +88,9 @@ app.use(cors());
 // Routes
 // app.use("/api/v1/", alertRoutes);
 app.use("/api/v1/", alertControllerRoutes);
-app.use("/api/v1/containers", containerRoutes);
+app.use("/api/v1/container", containerRoutes);
 app.use("/api/v1/azure", azureRoutes);
+app.use("/api/v1/aws", awsRoutes);
 
 // Error handling
 app.all("*", (req, res, next) => {

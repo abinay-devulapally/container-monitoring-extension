@@ -1,5 +1,5 @@
 {
-  "watch": ["src"],
+  "watch": ["*"],
   "ignore": ["alerts.json"],
   "delay": "1000",
   "verbose": true

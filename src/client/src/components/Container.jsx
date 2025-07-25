@@ -10,7 +10,7 @@ const CACHE_KEY = "containerData";
 sessionStorage.removeItem("containerData");
 
 async function fetchAllContainers() {
-  const response = await fetch("http://localhost:8000/api/v1/containers/all");
+  const response = await fetch("http://localhost:8000/api/v1/container/all"); // <-- change "containers" to "container"
   if (!response.ok) {
     throw new AppError("Failed to fetch data", response.status);
   }
@@ -18,160 +18,48 @@ async function fetchAllContainers() {
   return data;
 }
 
-function AllContainers({
-  containerName,
-  containerImage,
-  containerStatus,
-  containerState,
-  containerCreated,
-  containerPorts,
-  containerLabels,
-  containerNetworkMode,
-  containerIPAddress,
-  containerCPUUsage,
-  containerMemoryUsage,
-  containerRestartCount,
-  containerMounts,
-  containerHealthCheck,
-  setDebug,
-}) {
-  const [showModal, setShowModal] = useState(false);
+// Add this function to fetch search results from the backend
+async function searchContainers({ name, image, status }) {
+  const params = new URLSearchParams();
+  if (name) params.append("name", name);
+  if (image) params.append("image", image);
+  if (status) params.append("status", status);
 
-  const openModal = () => {
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const displayName = containerName.replace("/", "");
-
-  return (
-    <>
-      <div className="bg-gray-950 text-white shadow-lg rounded-lg overflow-hidden mb-4">
-        <div className="px-6 py-4">
-          <div>
-            <div className="font-bold text-2xl mb-2">{displayName}</div>
-            <p className="text-sm italic mb-2">Image: {containerImage}</p>
-            {containerHealthCheck === "N/A" ? (
-              <p className="text-sm text-yellow-200">Healthcheck not enabled</p>
-            ) : (
-              <p
-                className={`text-sm ${
-                  containerStatus.includes("unhealthy") ||
-                  containerStatus.includes("running")
-                    ? "text-red-500"
-                    : "text-green-500"
-                }`}
-              >
-                Status: {containerStatus}
-              </p>
-            )}
-            {containerState === "running" ? (
-              <p className="text-sm italic mb-2 text-green-500">
-                State: {containerState}
-              </p>
-            ) : (
-              <p className="text-sm italic mb-2 text-red-500">
-                State: {containerState}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <button
-              onClick={openModal}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 text-xs rounded"
-            >
-              View Details
-            </button>
-            {containerStatus.includes("unhealthy") ? (
-              <button
-                onClick={() =>
-                  setDebug(
-                    `${displayName} Healthcheck failed explain how to resolve it`
-                  )
-                }
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 text-xs rounded"
-              >
-                Debug
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </div>
-      <Modal
-        isOpen={showModal}
-        onClose={closeModal}
-        container={{
-          displayName,
-          containerImage,
-          containerStatus,
-          containerState,
-          containerCreated,
-          containerPorts,
-          containerLabels,
-          containerNetworkMode,
-          containerIPAddress,
-          containerCPUUsage,
-          containerMemoryUsage,
-          containerRestartCount,
-          containerMounts,
-          containerHealthCheck,
-        }}
-      />
-    </>
+  const response = await fetch(
+    `http://localhost:8000/api/v1/container/search?${params.toString()}`
   );
+  if (!response.ok) {
+    throw new AppError("Failed to search containers", response.status);
+  }
+  return await response.json();
 }
 
-const ContainerList = ({ containers, setDebug }) => (
-  <>
-    {containers.length === 0 ? (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-zinc-300 italic">No containers to display</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {containers.map((container) => (
-          <AllContainers
-            key={container.Id}
-            containerId={container.Id}
-            containerName={
-              container.Name + " (" + container.Id.slice(0, 12) + ")"
-            }
-            containerImage={container.Image}
-            containerStatus={container.Status}
-            containerState={container.State}
-            containerCreated={container.Created}
-            containerPorts={container.Ports}
-            containerLabels={container.Labels}
-            containerNetworkMode={container.NetworkMode}
-            containerIPAddress={container.IPAddress}
-            containerCPUUsage={container.CPUUsage}
-            containerMemoryUsage={container.MemoryUsage}
-            containerRestartCount={container.RestartCount}
-            containerMounts={container.Mounts}
-            containerHealthCheck={container.HealthCheck}
-            setDebug={setDebug}
-          />
-        ))}
-      </div>
-    )}
-  </>
-);
-
-const Notification = ({ message, onClose }) => {
+const Notification = ({ id, message, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose();
-    }, 3000); // Hide notification after 3 seconds
+      onClose(id);
+    }, 2000); // Hide notification after 2 seconds
 
     return () => clearTimeout(timer); // Cleanup on component unmount
-  }, [onClose]);
+  }, [id, onClose]);
+
+  const { messageText, type } = message;
+
+  let notificationClass = "bg-blue-500";
+  if (type === "error") {
+    notificationClass = "bg-red-500";
+  }
 
   return (
-    <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg">
-      {message}
+    <div
+      className={`fixed bottom-${
+        4 + id * 60
+      } right-4 ${notificationClass} text-white px-4 py-2 rounded shadow-lg`}
+    >
+      <span>{messageText}</span>
+      <button onClick={() => onClose(id)} className="ml-4 text-lg">
+        &times;
+      </button>
     </div>
   );
 };
@@ -197,7 +85,7 @@ const ContainerRow = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState(null); // State for notification
+  const [notifications, setNotifications] = useState([]); // State for notification
 
   const openModal = () => {
     setShowModal(true);
@@ -211,7 +99,7 @@ const ContainerRow = ({
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/v1/containers/${action}/${containerId}`,
+        `http://localhost:8000/api/v1/container/${action}/${containerId}`,
         {
           method: "POST",
         }
@@ -221,13 +109,27 @@ const ContainerRow = ({
       }
       await response.json();
       refreshContainers(); // Refresh the list after performing the action
-      setNotification(
-        `${action.charAt(0).toUpperCase() + action.slice(1)} action completed.`
-      ); // Show notification
+      setNotifications((prev) => [
+        ...prev,
+        {
+          id: Date.now(), // Unique ID based on timestamp
+          messageText: `${
+            action.charAt(0).toUpperCase() + action.slice(1)
+          } action completed for ${displayName}.`,
+          type: "success",
+        },
+      ]); // Show notification
     } catch (error) {
       console.error(`Error ${action} container:`, error);
       // setDebug(`${containerName} failed to ${action}. ${error.message}`);
-      setNotification(`Failed to ${action} container.`); // Show notification
+      setNotifications((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          messageText: `Failed to ${action} ${displayName}.`,
+          type: "error",
+        },
+      ]); // Show notification
     } finally {
       setLoading(false);
     }
@@ -261,7 +163,20 @@ const ContainerRow = ({
         <div
           className={`col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-2 text-sm ${getStatusColorClass()}`}
         >
-          {containerStatus}
+          {containerHealthCheck === "N/A" ? (
+            <p className="text-sm text-yellow-200">Healthcheck not enabled</p>
+          ) : (
+            <p
+              className={`text-sm ${
+                containerStatus.includes("unhealthy") ||
+                containerStatus.includes("running")
+                  ? "text-red-500"
+                  : "text-green-500"
+              }`}
+            >
+              {containerStatus}
+            </p>
+          )}
         </div>
         <div
           className={`col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-1 text-sm ${getStateColorClass()}`}
@@ -389,12 +304,16 @@ const ContainerRow = ({
           containerHealthCheck,
         }}
       />
-      {notification && (
+      {notifications.map((notification) => (
         <Notification
+          key={notification.id}
+          id={notification.id}
           message={notification}
-          onClose={() => setNotification(null)}
+          onClose={(id) =>
+            setNotifications((prev) => prev.filter((n) => n.id !== id))
+          }
         />
-      )}
+      ))}
     </>
   );
 };
@@ -465,9 +384,17 @@ const ContainerListNew = ({ containers, refreshContainers, setDebug }) => {
 
 function Container({ setDebug }) {
   const [allContainers, setAllContainers] = useState([]);
+  const [filter, setFilter] = useState("running");
   const [reload, setReload] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // New state for search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
+  const [searchImage, setSearchImage] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
   useEffect(() => {
     async function processContainerData() {
       try {
@@ -509,6 +436,40 @@ function Container({ setDebug }) {
     }
   };
 
+  // New: handle search
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setIsSearching(true);
+    try {
+      const results = await searchContainers({
+        name: searchTerm,
+        image: searchImage,
+        status: searchStatus,
+      });
+      setAllContainers(results);
+    } catch (error) {
+      setError("Failed to search containers. " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // New: handle clear search
+  const handleClearSearch = async () => {
+    setSearchTerm("");
+    setSearchImage("");
+    setSearchStatus("");
+    setIsSearching(false);
+    handleReload();
+  };
+
+  const filteredContainers = allContainers.filter((container) => {
+    if (filter === "running") return container.State === "running";
+    if (filter === "exited") return container.State === "exited";
+    return true;
+  });
+
   return (
     <div>
       <div className="flex items-center space-x-3 text-3xl font-bold mb-4 text-white">
@@ -529,14 +490,69 @@ function Container({ setDebug }) {
             <span className="mx-1">Refresh</span>
           </button>
         </span>
+        <div className="flex items-center px-2 py-1 text-sm">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="bg-gray-700 text-white p-2 rounded"
+          >
+            <option value="all">All</option>
+            <option value="running">Running</option>
+            <option value="exited">Exited</option>
+          </select>
+        </div>
       </div>
+
+      {/* Search Bar */}
+      <form
+        onSubmit={handleSearch}
+        className="flex flex-wrap items-center space-x-2 mb-4"
+      >
+        <input
+          type="text"
+          placeholder="Search by name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="bg-gray-700 text-white p-2 rounded mb-2"
+        />
+        <input
+          type="text"
+          placeholder="Search by image"
+          value={searchImage}
+          onChange={(e) => setSearchImage(e.target.value)}
+          className="bg-gray-700 text-white p-2 rounded mb-2"
+        />
+        <input
+          type="text"
+          placeholder="Search by status"
+          value={searchStatus}
+          onChange={(e) => setSearchStatus(e.target.value)}
+          className="bg-gray-700 text-white p-2 rounded mb-2"
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded mb-2"
+        >
+          Search
+        </button>
+        {isSearching && (
+          <button
+            type="button"
+            onClick={handleClearSearch}
+            className="bg-gray-500 text-white px-4 py-2 rounded mb-2"
+          >
+            Clear
+          </button>
+        )}
+      </form>
+
       {error ? (
         <ErrorComponent message={error} debug={true} />
       ) : loading ? (
         <LoadingSpinner />
       ) : (
         <ContainerListNew
-          containers={allContainers}
+          containers={filteredContainers}
           refreshContainers={refreshContainers}
           setDebug={setDebug}
         />

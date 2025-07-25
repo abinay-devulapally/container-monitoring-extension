@@ -7,7 +7,7 @@
   "displayName": "Container Monitoring Extension",
   "publisher": "LiveContainerMonitoring",
   "description": "Container Monitoring Extension for Visual Studio Code provides real-time monitoring and management of Docker container health and status directly within the VS Code environment, featuring debug capabilities of containers with AI chat support",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.90.0"
